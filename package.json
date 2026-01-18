@@ -47,6 +47,7 @@
     "wrangler": "^4.59.2"
   },
   "dependencies": {
+    "@cloudflare/kv-asset-handler": "^0.4.2",
     "bcrypt-ts": "^8.0.0",
     "drizzle-orm": "^0.29.5",
     "hono": "^3.12.12",

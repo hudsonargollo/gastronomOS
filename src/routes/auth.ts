@@ -1,10 +1,11 @@
 import { Hono } from 'hono';
 import { drizzle } from 'drizzle-orm/d1';
+import * as schema from '../db/schema';
 import { createUserService, IUserService } from '../services/user';
 import { createTenantService, ITenantService } from '../services/tenant';
 import { createAuditService, IAuditService, extractAuditContext } from '../services/audit';
 import { IJWTService } from '../services/jwt';
-import { RegisterUserRequest, LoginRequest, LoginResponse } from '../types';
+import { RegisterUserRequest, LoginRequest, LoginResponse, UserRole } from '../types';
 import { createErrorResponse } from '../utils';
 import { z } from 'zod';
 
@@ -45,9 +46,9 @@ const auth = new Hono<{ Bindings: Env; Variables: Variables }>();
 // Service initialization middleware
 auth.use('*', async (c, next) => {
   try {
-    const db = drizzle(c.env.DB);
-    const userService = createUserService(db);
-    const tenantService = createTenantService(db);
+    const db = drizzle(c.env.DB, { schema });
+    const userService = createUserService(db as any);
+    const tenantService = createTenantService(db as any);
     const auditService = createAuditService(db);
     
     c.set('userService', userService);
@@ -238,6 +239,47 @@ auth.post('/login', async (c) => {
   try {
     // Parse and validate request body
     const body = await c.req.json();
+    
+    // Handle demo login
+    if (body.email === 'demo@gastronomos.com' && body.password === 'demo123') {
+      const jwtService = c.get('jwtService');
+      
+      // Create demo user response
+      const demoUser = {
+        id: 'demo-user-id',
+        email: 'demo@gastronomos.com',
+        role: 'ADMIN' as UserRole,
+        tenantId: 'demo-tenant-id',
+        locationId: 'demo-location-id'
+      };
+
+      // Generate JWT token for demo user
+      const jwtClaims = {
+        sub: demoUser.id,
+        tenant_id: demoUser.tenantId,
+        role: demoUser.role,
+        location_id: demoUser.locationId,
+      };
+      
+      const token = await jwtService.sign(jwtClaims);
+
+      // Log demo login
+      await auditService.logAuthenticationEvent('LOGIN', {
+        ...auditContext,
+        tenantId: demoUser.tenantId,
+        userId: demoUser.id,
+        resource: 'Demo user login'
+      });
+
+      const response: LoginResponse = {
+        token,
+        user: demoUser,
+      };
+
+      return c.json(response, 200);
+    }
+    
+    // Validate regular login data
     const validatedData = loginSchema.parse(body);
     
     const userService = c.get('userService');
@@ -331,6 +373,15 @@ auth.post('/login', async (c) => {
 
     // Handle validation errors
     if (error instanceof z.ZodError) {
+      // For demo login, return a more helpful error
+      if (error.errors.some(e => e.path.includes('tenantSlug'))) {
+        return c.json(createErrorResponse(
+          'Demo Login',
+          'Use demo@gastronomos.com / demo123 for demo access',
+          'DEMO_LOGIN_INFO'
+        ), 400);
+      }
+      
       // Log validation error
       await auditService.logAuthenticationEvent('LOGIN_FAILED', {
         ...auditContext,

@@ -4,6 +4,16 @@ import { logger } from 'hono/logger';
 import { createJWTService, IJWTService } from './services/jwt';
 import { validateJWTConfig } from './config';
 import { errorHandler, notFoundHandler } from './middleware/error';
+import { createRateLimit, ipRateLimit } from './middleware/rate-limit';
+import { inputValidationMiddleware } from './services/data-sanitization';
+import { versionDetectionMiddleware, versionCompatibilityMiddleware, responseTransformationMiddleware } from './services/api-versioning';
+import { ApiMonitoringService, requestMetricsMiddleware, createHealthCheckHandler, createMetricsHandler } from './services/api-monitoring';
+import { CacheService, cacheMiddleware } from './services/caching';
+import { ScheduledJobsService } from './services/scheduled-jobs';
+import { WebhookSystemService } from './services/webhook-system';
+import { ComprehensiveAuditService } from './services/comprehensive-audit';
+import categoryRoutes from './routes/categories';
+import inventoryRoutes from './routes/inventory';
 import authRoutes from './routes/auth';
 import tenantRoutes from './routes/tenants';
 import userRoutes from './routes/users';
@@ -44,18 +54,88 @@ export interface Env extends Record<string, unknown> {
   RECEIPT_BUCKET?: R2Bucket;
   RECEIPT_QUEUE?: Queue;
   AI?: Ai;
+  REDIS_URL?: string;
+  WEBHOOK_SECRET?: string;
 }
 
-// Extend Hono context with JWT service
+// Extend Hono context with services
 type Variables = {
   jwtService: IJWTService;
+  monitoringService: ApiMonitoringService;
+  cacheService: CacheService;
+  auditService: ComprehensiveAuditService;
+  webhookService: WebhookSystemService;
+  scheduledJobsService: ScheduledJobsService;
 };
+
+// Initialize services
+let monitoringService: ApiMonitoringService;
+let cacheService: CacheService;
+let auditService: ComprehensiveAuditService;
+let webhookService: WebhookSystemService;
+let scheduledJobsService: ScheduledJobsService;
 
 // Initialize Hono app
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
+// Initialize services
+function initializeServices(env: Env) {
+  if (!monitoringService) {
+    monitoringService = new ApiMonitoringService();
+  }
+  
+  if (!cacheService) {
+    cacheService = new CacheService({
+      memory: { maxSize: 10000, maxMemory: 100 * 1024 * 1024 },
+      redis: env.REDIS_URL ? { host: 'localhost', port: 6379 } : undefined,
+    });
+  }
+  
+  if (!auditService) {
+    auditService = new ComprehensiveAuditService(env.DB);
+  }
+  
+  if (!webhookService) {
+    webhookService = new WebhookSystemService();
+  }
+  
+  if (!scheduledJobsService) {
+    scheduledJobsService = new ScheduledJobsService();
+  }
+}
+
 // Global error handler (must be first)
 app.use('*', errorHandler());
+
+// Initialize services middleware
+app.use('*', async (c, next) => {
+  initializeServices(c.env);
+  
+  // Attach services to context
+  c.set('monitoringService', monitoringService);
+  c.set('cacheService', cacheService);
+  c.set('auditService', auditService);
+  c.set('webhookService', webhookService);
+  c.set('scheduledJobsService', scheduledJobsService);
+  
+  await next();
+});
+
+// API versioning middleware
+app.use('/api/*', versionDetectionMiddleware());
+app.use('/api/*', versionCompatibilityMiddleware());
+
+// Request monitoring middleware
+app.use('*', (c, next) => requestMetricsMiddleware(monitoringService)(c, next));
+
+// Input validation and sanitization middleware
+app.use('/api/*', inputValidationMiddleware());
+
+// Caching middleware for GET requests
+app.use('/api/*', (c, next) => cacheMiddleware(cacheService, {
+  defaultTTL: 300, // 5 minutes
+  shouldCache: (c) => c.req.method === 'GET' && !c.req.path.includes('/auth/'),
+})(c, next));
 
 // Middleware
 app.use('*', logger());
@@ -63,13 +143,52 @@ app.use('*', cors({
   origin: [
     'http://localhost:3000', 
     'https://app.gastronomos.com',
+    'https://gastronomos.clubemkt.digital',
     'https://dbdbf0a5.gastronomos-frontend.pages.dev',
+    'https://fdfed44d.gastronomos-frontend.pages.dev',
+    'https://46e0e617.gastronomos-frontend.pages.dev',
+    'https://d4d079d5.gastronomos-frontend.pages.dev',
+    'https://dac868cd.gastronomos-frontend.pages.dev',
     'https://gastronomos-frontend.pages.dev'
   ],
-  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   credentials: true,
+  maxAge: 86400, // 24 hours
 }));
+
+// Security headers middleware
+app.use('*', async (c, next) => {
+  await next();
+  
+  // Security headers
+  c.header('X-Content-Type-Options', 'nosniff');
+  c.header('X-Frame-Options', 'DENY');
+  c.header('X-XSS-Protection', '1; mode=block');
+  c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+  c.header('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  
+  // Content Security Policy
+  c.header('Content-Security-Policy', [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self' data:",
+    "connect-src 'self' https:",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'"
+  ].join('; '));
+  
+  // Rate limiting headers (basic implementation)
+  const rateLimitInfo = c.get('rateLimitInfo');
+  if (rateLimitInfo) {
+    c.header('X-RateLimit-Limit', rateLimitInfo.limit.toString());
+    c.header('X-RateLimit-Remaining', rateLimitInfo.remaining.toString());
+    c.header('X-RateLimit-Reset', rateLimitInfo.reset.toString());
+  }
+});
 
 // JWT service initialization middleware
 app.use('*', async (c, next) => {
@@ -92,26 +211,64 @@ app.use('*', async (c, next) => {
 });
 
 // Health check endpoint
-app.get('/health', (c) => {
-  return c.json({ 
-    status: 'healthy', 
+app.get('/health', (c) => createHealthCheckHandler(monitoringService)(c));
+
+// Metrics endpoint
+app.get('/metrics', (c) => createMetricsHandler(monitoringService)(c));
+
+// API status endpoint
+app.get('/api/status', async (c) => {
+  const stats = {
+    status: 'operational',
     timestamp: new Date().toISOString(),
-    environment: c.env?.ENVIRONMENT || 'development'
-  });
+    version: '1.0.0',
+    environment: c.env?.ENVIRONMENT || 'development',
+    services: {
+      monitoring: monitoringService.getSystemMetrics(),
+      cache: cacheService.getStats(),
+      webhooks: webhookService ? {
+        totalEndpoints: webhookService.getWebhooks('system').length,
+      } : null,
+      scheduledJobs: scheduledJobsService ? scheduledJobsService.getJobStats() : null,
+    },
+  };
+  
+  return c.json(stats);
 });
 
 // API routes placeholder
 app.get('/api/v1', (c) => {
   return c.json({ 
-    message: 'GastronomOS Authentication API v1',
-    version: '1.0.0'
+    message: 'GastronomOS Advanced Backend API v1',
+    version: '1.0.0',
+    features: [
+      'Comprehensive pagination and filtering',
+      'Bulk operations',
+      'Advanced data export',
+      'Comprehensive audit logging',
+      'API versioning',
+      'Full-text search',
+      'Caching',
+      'Webhook system',
+      'Scheduled jobs',
+      'Monitoring and health checks',
+    ],
   });
 });
 
-// Mount auth routes
-app.route('/auth', authRoutes);
+// Mount auth routes with strict rate limiting
+app.use('/api/v1/auth/*', createRateLimit('auth'));
+app.route('/api/v1/auth', authRoutes);
+
+// Apply general API rate limiting to all protected routes
+app.use('/api/v1/*', createRateLimit('api'));
+
+// Response transformation middleware (for API versioning)
+app.use('/api/*', responseTransformationMiddleware());
 
 // Mount protected API routes
+app.route('/api/v1/categories', categoryRoutes);
+app.route('/api/v1/inventory', inventoryRoutes);
 app.route('/api/v1/tenants', tenantRoutes);
 app.route('/api/v1/users', userRoutes);
 app.route('/api/v1/locations', locationRoutes);

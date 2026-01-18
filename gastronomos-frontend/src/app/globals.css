@@ -123,3 +123,136 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Mobile-optimized utilities */
+@layer utilities {
+  /* Better touch targets for mobile */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Mobile-friendly spacing */
+  .mobile-padding {
+    @apply px-3 sm:px-6;
+  }
+  
+  .mobile-margin {
+    @apply mx-3 sm:mx-6;
+  }
+  
+  /* Responsive text sizing */
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  /* Mobile-optimized cards */
+  .mobile-card {
+    @apply rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6;
+  }
+  
+  /* Better mobile scrolling */
+  .mobile-scroll {
+    @apply overflow-x-auto;
+  }
+  
+  /* Mobile-friendly buttons */
+  .mobile-button {
+    @apply h-11 sm:h-12 px-4 sm:px-6 text-sm sm:text-base;
+  }
+  
+  /* Responsive grid gaps */
+  .mobile-grid-gap {
+    @apply gap-3 sm:gap-4 lg:gap-6;
+  }
+  
+  /* Mobile-optimized form inputs */
+  .mobile-input {
+    @apply h-11 sm:h-12 text-base px-3 sm:px-4;
+  }
+  
+  /* Better mobile navigation */
+  .mobile-nav-item {
+    @apply min-h-[44px] px-3 py-2.5 sm:py-3 rounded-xl;
+  }
+  
+  /* Mobile-friendly dropdowns */
+  .mobile-dropdown {
+    @apply w-72 sm:w-80 max-h-64 overflow-y-auto;
+  }
+  
+  /* Responsive sidebar */
+  .mobile-sidebar {
+    @apply w-64 sm:w-72 lg:w-80;
+  }
+  
+  /* Mobile-optimized stats cards */
+  .mobile-stats-card {
+    @apply p-4 sm:p-6 rounded-xl sm:rounded-2xl;
+  }
+  
+  /* Better mobile tables */
+  .mobile-table {
+    @apply text-sm overflow-x-auto;
+  }
+  
+  .mobile-table th,
+  .mobile-table td {
+    @apply px-2 sm:px-4 py-2 sm:py-3;
+  }
+  
+  /* Mobile-friendly modals */
+  .mobile-modal {
+    @apply mx-3 sm:mx-auto max-w-md sm:max-w-lg;
+  }
+  
+  /* Responsive image containers */
+  .mobile-image-container {
+    @apply h-32 sm:h-40 lg:h-48 w-full rounded-lg sm:rounded-xl overflow-hidden;
+  }
+  
+  /* Mobile-optimized search */
+  .mobile-search {
+    @apply h-10 sm:h-11 text-sm sm:text-base px-3 sm:px-4;
+  }
+  
+  /* Better mobile animations */
+  .mobile-hover {
+    @apply hover:scale-[1.02] active:scale-[0.98] transition-transform duration-150;
+  }
+  
+  /* Mobile-friendly badges */
+  .mobile-badge {
+    @apply px-2 py-1 text-xs sm:text-sm rounded-md sm:rounded-lg;
+  }
+  
+  /* Responsive flex spacing */
+  .mobile-flex-gap {
+    @apply space-x-2 sm:space-x-3 lg:space-x-4;
+  }
+  
+  /* Mobile-optimized headers */
+  .mobile-header {
+    @apply h-14 sm:h-16 px-3 sm:px-6;
+  }
+  
+  /* Better mobile line clamping */
+  .line-clamp-mobile {
+    @apply line-clamp-2 sm:line-clamp-3;
+  }
+}
