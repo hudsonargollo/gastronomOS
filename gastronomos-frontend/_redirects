@@ -1,0 +1,5 @@
+# Redirect all routes to index.html for client-side routing
+/*    /index.html   200
+
+# API proxy to backend
+/api/*  https://gastronomos-production.hudsonargollo2.workers.dev/api/:splat  200
