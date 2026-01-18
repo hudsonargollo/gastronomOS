@@ -11,10 +11,10 @@ CACHE_TTL = "300"
 JWT_EXPIRY = "86400"
 BCRYPT_ROUNDS = "10"
 
-# Development R2 bucket binding
-[[env.development.r2_buckets]]
-binding = "RECEIPT_BUCKET"
-bucket_name = "gastronomos-receipts-dev"
+# Development R2 bucket binding (disabled until R2 is enabled)
+# [[env.development.r2_buckets]]
+# binding = "RECEIPT_BUCKET"
+# bucket_name = "gastronomos-receipts-dev"
 
 # Development AI binding
 [env.development.ai]
@@ -28,10 +28,10 @@ CACHE_TTL = "600"
 JWT_EXPIRY = "43200"
 BCRYPT_ROUNDS = "12"
 
-# Staging R2 bucket binding
-[[env.staging.r2_buckets]]
-binding = "RECEIPT_BUCKET"
-bucket_name = "gastronomos-receipts-staging"
+# Staging R2 bucket binding (disabled until R2 is enabled)
+# [[env.staging.r2_buckets]]
+# binding = "RECEIPT_BUCKET"
+# bucket_name = "gastronomos-receipts-staging"
 
 # Staging AI binding
 [env.staging.ai]
@@ -47,25 +47,25 @@ BCRYPT_ROUNDS = "14"
 RATE_LIMIT_ENABLED = "true"
 AUDIT_LOG_RETENTION_DAYS = "90"
 
-# Production R2 bucket binding
-[[env.production.r2_buckets]]
-binding = "RECEIPT_BUCKET"
-bucket_name = "gastronomos-receipts-prod"
+# Production R2 bucket binding (disabled until R2 is enabled)
+# [[env.production.r2_buckets]]
+# binding = "RECEIPT_BUCKET"
+# bucket_name = "gastronomos-receipts-prod"
 
 # Production AI binding
 [env.production.ai]
 binding = "AI"
 
-# Production analytics engine datasets
-[[env.production.analytics_engine_datasets]]
-binding = "QUEUE_ANALYTICS"
-dataset = "receipt_processing_metrics_prod"
+# Production analytics engine datasets (disabled until analytics are set up)
+# [[env.production.analytics_engine_datasets]]
+# binding = "QUEUE_ANALYTICS"
+# dataset = "receipt_processing_metrics_prod"
 
-# Production durable objects
-[[env.production.durable_objects.bindings]]
-name = "QUEUE_STATE"
-class_name = "QueueStateManager"
-script_name = "gastronomos"
+# Production durable objects (disabled until durable objects are set up)
+# [[env.production.durable_objects.bindings]]
+# name = "QUEUE_STATE"
+# class_name = "QueueStateManager"
+# script_name = "gastronomos"
 
 # D1 Database bindings for each environment
 [[env.development.d1_databases]]
@@ -93,78 +93,78 @@ database_name = "gastronomos-db"
 database_id = "your-database-id-here"
 migrations_dir = "migrations"
 
-# Worker limits and configuration
-[limits]
-cpu_ms = 50
+# Worker limits and configuration (disabled for free plan)
+# [limits]
+# cpu_ms = 50
 
-# R2 Bucket bindings for receipt storage
-[[r2_buckets]]
-binding = "RECEIPT_BUCKET"
-bucket_name = "gastronomos-receipts"
+# R2 Bucket bindings for receipt storage (disabled until R2 is enabled)
+# [[r2_buckets]]
+# binding = "RECEIPT_BUCKET"
+# bucket_name = "gastronomos-receipts"
 
 # AI binding for OCR processing
 [ai]
 binding = "AI"
 
-# Queue bindings for receipt processing
-[[queues.producers]]
-queue = "receipt-processing-queue"
-binding = "RECEIPT_QUEUE"
+# Queue bindings for receipt processing (disabled until queues are set up)
+# [[queues.producers]]
+# queue = "receipt-processing-queue"
+# binding = "RECEIPT_QUEUE"
 
-[[queues.consumers]]
-queue = "receipt-processing-queue"
-max_batch_size = 10
-max_batch_timeout = 30
-max_retries = 3
-dead_letter_queue = "receipt-processing-dlq"
+# [[queues.consumers]]
+# queue = "receipt-processing-queue"
+# max_batch_size = 10
+# max_batch_timeout = 30
+# max_retries = 3
+# dead_letter_queue = "receipt-processing-dlq"
 
-# Dead letter queue for failed receipt processing
-[[queues.producers]]
-queue = "receipt-processing-dlq"
-binding = "RECEIPT_DLQ"
+# Dead letter queue for failed receipt processing (disabled)
+# [[queues.producers]]
+# queue = "receipt-processing-dlq"
+# binding = "RECEIPT_DLQ"
 
-# Analytics binding for queue monitoring
-[[analytics_engine_datasets]]
-binding = "QUEUE_ANALYTICS"
-dataset = "receipt_processing_metrics"
+# Analytics binding for queue monitoring (disabled until analytics are set up)
+# [[analytics_engine_datasets]]
+# binding = "QUEUE_ANALYTICS"
+# dataset = "receipt_processing_metrics"
 
-# Durable Objects for queue state management (if needed)
-[[durable_objects.bindings]]
-name = "QUEUE_STATE"
-class_name = "QueueStateManager"
-script_name = "gastronomos"
+# Durable Objects for queue state management (disabled until durable objects are set up)
+# [[durable_objects.bindings]]
+# name = "QUEUE_STATE"
+# class_name = "QueueStateManager"
+# script_name = "gastronomos"
 
-# Environment-specific queue configurations
-[env.development.queues]
-[[env.development.queues.producers]]
-queue = "receipt-processing-queue-dev"
-binding = "RECEIPT_QUEUE"
+# Environment-specific queue configurations (disabled until queues are set up)
+# [env.development.queues]
+# [[env.development.queues.producers]]
+# queue = "receipt-processing-queue-dev"
+# binding = "RECEIPT_QUEUE"
 
-[[env.development.queues.consumers]]
-queue = "receipt-processing-queue-dev"
-max_batch_size = 5
-max_batch_timeout = 15
-max_retries = 2
+# [[env.development.queues.consumers]]
+# queue = "receipt-processing-queue-dev"
+# max_batch_size = 5
+# max_batch_timeout = 15
+# max_retries = 2
 
-[env.staging.queues]
-[[env.staging.queues.producers]]
-queue = "receipt-processing-queue-staging"
-binding = "RECEIPT_QUEUE"
+# [env.staging.queues]
+# [[env.staging.queues.producers]]
+# queue = "receipt-processing-queue-staging"
+# binding = "RECEIPT_QUEUE"
 
-[[env.staging.queues.consumers]]
-queue = "receipt-processing-queue-staging"
-max_batch_size = 10
-max_batch_timeout = 30
-max_retries = 3
+# [[env.staging.queues.consumers]]
+# queue = "receipt-processing-queue-staging"
+# max_batch_size = 10
+# max_batch_timeout = 30
+# max_retries = 3
 
-[env.production.queues]
-[[env.production.queues.producers]]
-queue = "receipt-processing-queue-prod"
-binding = "RECEIPT_QUEUE"
+# [env.production.queues]
+# [[env.production.queues.producers]]
+# queue = "receipt-processing-queue-prod"
+# binding = "RECEIPT_QUEUE"
 
-[[env.production.queues.consumers]]
-queue = "receipt-processing-queue-prod"
-max_batch_size = 20
-max_batch_timeout = 60
-max_retries = 5
-dead_letter_queue = "receipt-processing-dlq-prod"
+# [[env.production.queues.consumers]]
+# queue = "receipt-processing-queue-prod"
+# max_batch_size = 20
+# max_batch_timeout = 60
+# max_retries = 5
+# dead_letter_queue = "receipt-processing-dlq-prod"
