@@ -6,6 +6,7 @@ export interface SuccessResponse<T = any> {
   data: T;
   timestamp: string;
   requestId?: string;
+  message?: string;
 }
 
 export interface ErrorResponse {

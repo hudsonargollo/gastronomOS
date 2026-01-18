@@ -17,15 +17,15 @@ interface RateLimitInfo {
 // In-memory store for rate limiting (in production, use Redis or similar)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
-// Cleanup old entries periodically
-setInterval(() => {
+// Cleanup function for old entries
+function cleanupRateLimitStore() {
   const now = Date.now();
   for (const [key, value] of rateLimitStore.entries()) {
     if (now > value.resetTime) {
       rateLimitStore.delete(key);
     }
   }
-}, 60000); // Cleanup every minute
+}
 
 /**
  * Rate limiting middleware
@@ -40,6 +40,11 @@ export function rateLimit(config: RateLimitConfig): MiddlewareHandler {
   } = config;
 
   return async (c: Context, next) => {
+    // Periodically cleanup old entries (every ~100 requests)
+    if (Math.random() < 0.01) {
+      cleanupRateLimitStore();
+    }
+    
     const key = keyGenerator(c);
     const now = Date.now();
     const windowStart = now - windowMs;

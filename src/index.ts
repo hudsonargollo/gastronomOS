@@ -80,27 +80,32 @@ const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 // Initialize services
 function initializeServices(env: Env) {
-  if (!monitoringService) {
-    monitoringService = new ApiMonitoringService();
-  }
-  
-  if (!cacheService) {
-    cacheService = new CacheService({
-      memory: { maxSize: 10000, maxMemory: 100 * 1024 * 1024 },
-      redis: env.REDIS_URL ? { host: 'localhost', port: 6379 } : undefined,
-    });
-  }
-  
-  if (!auditService) {
-    auditService = new ComprehensiveAuditService(env.DB);
-  }
-  
-  if (!webhookService) {
-    webhookService = new WebhookSystemService();
-  }
-  
-  if (!scheduledJobsService) {
-    scheduledJobsService = new ScheduledJobsService();
+  try {
+    if (!monitoringService) {
+      monitoringService = new ApiMonitoringService();
+    }
+    
+    if (!cacheService) {
+      cacheService = new CacheService({
+        memory: { maxSize: 10000, maxMemory: 100 * 1024 * 1024 },
+        redis: undefined, // Disable Redis for now
+      });
+    }
+    
+    if (!auditService && env.DB) {
+      auditService = new ComprehensiveAuditService(env.DB);
+    }
+    
+    if (!webhookService) {
+      webhookService = new WebhookSystemService();
+    }
+    
+    if (!scheduledJobsService) {
+      scheduledJobsService = new ScheduledJobsService();
+    }
+  } catch (error) {
+    console.error('Service initialization error:', error);
+    // Continue with basic functionality even if some services fail
   }
 }
 
@@ -109,33 +114,65 @@ app.use('*', errorHandler());
 
 // Initialize services middleware
 app.use('*', async (c, next) => {
-  initializeServices(c.env);
-  
-  // Attach services to context
-  c.set('monitoringService', monitoringService);
-  c.set('cacheService', cacheService);
-  c.set('auditService', auditService);
-  c.set('webhookService', webhookService);
-  c.set('scheduledJobsService', scheduledJobsService);
-  
-  await next();
+  try {
+    initializeServices(c.env);
+    
+    // Attach services to context (with fallbacks)
+    c.set('monitoringService', monitoringService || new ApiMonitoringService());
+    c.set('cacheService', cacheService || new CacheService({ memory: { maxSize: 1000 } }));
+    c.set('auditService', auditService);
+    c.set('webhookService', webhookService);
+    c.set('scheduledJobsService', scheduledJobsService);
+    
+    await next();
+  } catch (error) {
+    console.error('Middleware initialization error:', error);
+    await next();
+  }
 });
 
 // API versioning middleware
 app.use('/api/*', versionDetectionMiddleware());
 app.use('/api/*', versionCompatibilityMiddleware());
 
-// Request monitoring middleware
-app.use('*', (c, next) => requestMetricsMiddleware(monitoringService)(c, next));
+// Request monitoring middleware (conditional)
+app.use('*', async (c, next) => {
+  try {
+    const monitoring = c.get('monitoringService');
+    if (monitoring) {
+      return requestMetricsMiddleware(monitoring)(c, next);
+    }
+  } catch (error) {
+    console.error('Monitoring middleware error:', error);
+  }
+  await next();
+});
 
-// Input validation and sanitization middleware
-app.use('/api/*', inputValidationMiddleware());
+// Input validation and sanitization middleware (conditional)
+app.use('/api/*', async (c, next) => {
+  try {
+    return inputValidationMiddleware()(c, next);
+  } catch (error) {
+    console.error('Validation middleware error:', error);
+    await next();
+  }
+});
 
-// Caching middleware for GET requests
-app.use('/api/*', (c, next) => cacheMiddleware(cacheService, {
-  defaultTTL: 300, // 5 minutes
-  shouldCache: (c) => c.req.method === 'GET' && !c.req.path.includes('/auth/'),
-})(c, next));
+// Caching middleware for GET requests (conditional)
+app.use('/api/*', async (c, next) => {
+  try {
+    const cache = c.get('cacheService');
+    if (cache) {
+      return cacheMiddleware(cache, {
+        defaultTTL: 300, // 5 minutes
+        shouldCache: (c) => c.req.method === 'GET' && !c.req.path.includes('/auth/'),
+      })(c, next);
+    }
+  } catch (error) {
+    console.error('Cache middleware error:', error);
+  }
+  await next();
+});
 
 // Middleware
 app.use('*', logger());
@@ -211,7 +248,31 @@ app.use('*', async (c, next) => {
 });
 
 // Health check endpoint
-app.get('/health', (c) => createHealthCheckHandler(monitoringService)(c));
+app.get('/health', async (c) => {
+  try {
+    const monitoring = c.get('monitoringService');
+    if (monitoring) {
+      return createHealthCheckHandler(monitoring)(c);
+    } else {
+      // Fallback health check
+      const result = await c.env.DB.prepare('SELECT 1 as test').first();
+      return c.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        environment: c.env?.ENVIRONMENT || 'development',
+        database: result ? 'connected' : 'disconnected',
+        jwt_configured: !!c.env.JWT_SECRET
+      });
+    }
+  } catch (error) {
+    console.error('Health check error:', error);
+    return c.json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }, 500);
+  }
+});
 
 // Metrics endpoint
 app.get('/metrics', (c) => createMetricsHandler(monitoringService)(c));

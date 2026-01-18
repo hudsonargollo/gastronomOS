@@ -205,8 +205,12 @@ function DateRangePicker({
 }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false)
 
-  const handleSelect = (range: { from: Date | undefined; to: Date | undefined } | undefined) => {
-    onChange?.(range || { from: undefined, to: undefined })
+  const handleSelect = (range: any) => {
+    if (range) {
+      onChange?.(range);
+    } else {
+      onChange?.({ from: undefined, to: undefined });
+    }
   }
 
   const handleClear = (e: React.MouseEvent) => {

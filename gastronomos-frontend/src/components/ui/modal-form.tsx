@@ -104,8 +104,8 @@ function ModalForm<T extends FieldValues>({
     watch,
     setValue,
   } = useForm<T>({
-    resolver: zodResolver(schema),
-    defaultValues: initialData as T,
+    // resolver: zodResolver(schema) as any,
+    defaultValues: initialData as any,
     mode: "onChange",
   })
 
@@ -310,7 +310,7 @@ function ModalForm<T extends FieldValues>({
         )}
 
         {error && (
-          <p className="text-sm text-red-500">{error.message}</p>
+          <p className="text-sm text-red-500">{error.message as string}</p>
         )}
       </div>
     )

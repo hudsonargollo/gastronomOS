@@ -258,7 +258,7 @@ function ExportData<T extends Record<string, any>>({
       case 'excel':
         return 'Export as Excel'
       default:
-        return `Export as ${format.toUpperCase()}`
+        return `Export as ${(format as string).toUpperCase()}`
     }
   }
 

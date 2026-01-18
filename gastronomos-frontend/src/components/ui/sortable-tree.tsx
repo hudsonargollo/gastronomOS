@@ -232,7 +232,7 @@ function SortableTree<T extends TreeItem>({
         newFlatItems.splice(newIndex, 0, movedItem)
 
         // Remove depth property before rebuilding tree
-        const cleanItems = newFlatItems.map(({ depth, ...item }) => item as T)
+        const cleanItems = newFlatItems.map(({ depth, ...item }) => item as unknown as T)
         const newTree = buildTree(cleanItems)
         onItemsChange(newTree)
       }
