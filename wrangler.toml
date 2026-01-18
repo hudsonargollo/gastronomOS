@@ -47,6 +47,11 @@ BCRYPT_ROUNDS = "14"
 RATE_LIMIT_ENABLED = "true"
 AUDIT_LOG_RETENTION_DAYS = "90"
 
+# Production routes for custom domain
+[[env.production.routes]]
+pattern = "api.gastronomos.clubemkt.digital/*"
+zone_name = "clubemkt.digital"
+
 # Production R2 bucket binding (disabled until R2 is enabled)
 # [[env.production.r2_buckets]]
 # binding = "RECEIPT_BUCKET"

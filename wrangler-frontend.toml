@@ -8,3 +8,6 @@ bucket = "./gastronomos-frontend/out"
 [env.production]
 name = "gastronomos"
 vars = { ENVIRONMENT = "production" }
+routes = [
+  { pattern = "gastronomos.clubemkt.digital/*", zone_name = "clubemkt.digital" }
+]
