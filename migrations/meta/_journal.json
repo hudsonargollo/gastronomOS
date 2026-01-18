@@ -1,0 +1,48 @@
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1768478641064,
+      "tag": "0000_worried_mulholland_black",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1768505759374,
+      "tag": "0001_illegal_shen",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1768510500000,
+      "tag": "0002_purchasing_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1768532689264,
+      "tag": "0003_receipt_processing_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1768540000000,
+      "tag": "0004_allocation_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1768550000000,
+      "tag": "0005_transfer_tables",
+      "breakpoints": true
+    }
+  ]
+}

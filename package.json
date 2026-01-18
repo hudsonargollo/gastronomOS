@@ -1,0 +1,55 @@
+{
+  "name": "gastronomos-auth",
+  "version": "1.0.0",
+  "description": "Multi-tenant authentication and authorization system for GastronomOS",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "tsc",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate:sqlite",
+    "db:migrate": "wrangler d1 migrations apply gastronomos-db",
+    "db:migrate:local": "wrangler d1 migrations apply gastronomos-db --local",
+    "db:studio": "drizzle-kit studio",
+    "db:deploy": "node scripts/deploy-migrations.js",
+    "setup:secrets": "node scripts/setup-secrets.js",
+    "setup:secrets:staging": "node scripts/setup-secrets.js staging",
+    "setup:secrets:production": "node scripts/setup-secrets.js production",
+    "deploy:dev": "node scripts/deploy.js deploy development",
+    "deploy:staging": "node scripts/deploy.js deploy staging",
+    "deploy:prod": "node scripts/deploy.js deploy production",
+    "deploy:prod:auto": "powershell -ExecutionPolicy Bypass -File scripts/deploy-production.ps1",
+    "secrets:dev": "node scripts/deploy.js secrets development",
+    "secrets:staging": "node scripts/deploy.js secrets staging",
+    "secrets:prod": "node scripts/deploy.js secrets production",
+    "generate:jwt-secret": "node scripts/deploy.js generate-jwt-secret",
+    "db:migrate:dev": "wrangler d1 migrations apply gastronomos-dev --env development",
+    "db:migrate:staging": "wrangler d1 migrations apply gastronomos-staging --env staging",
+    "db:migrate:prod": "wrangler d1 migrations apply gastronomos-prod --env production"
+  },
+  "keywords": [
+    "cloudflare-workers",
+    "authentication",
+    "multi-tenant",
+    "restaurant"
+  ],
+  "author": "GastronomOS Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260115.0",
+    "@types/node": "^20.19.29",
+    "drizzle-kit": "^0.20.18",
+    "fast-check": "^4.5.3",
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.1",
+    "wrangler": "^4.59.2"
+  },
+  "dependencies": {
+    "bcrypt-ts": "^8.0.0",
+    "drizzle-orm": "^0.29.5",
+    "hono": "^3.12.12",
+    "zod": "^3.25.76"
+  }
+}
