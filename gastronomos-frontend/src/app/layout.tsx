@@ -6,8 +6,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "GastronomOS - Sistema de Gestão de Restaurante",
-  description: "Solução completa de gestão de restaurante para estoque, compras, transferências e análises",
+  title: "GastronomOS - O Sistema Operacional do seu Restaurante",
+  description: "O Sistema Operacional completo do seu restaurante para estoque, compras, transferências e análises",
   keywords: ["restaurante", "gestão", "estoque", "PDV", "gastronomia"],
 };
 

@@ -74,7 +74,7 @@ export default function LoginPage() {
             <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
               GastronomOS
             </h1>
-            <p className="text-slate-600 text-sm mt-1">Sistema de Gestão de Restaurante</p>
+            <p className="text-slate-600 text-sm mt-1">O Sistema Operacional do seu Restaurante</p>
           </div>
 
           {/* Login Card */}
