@@ -604,9 +604,9 @@ export function PurchaseOrderWizard({ onComplete, onCancel, className }: Purchas
 
       const response = await apiClient.createPurchaseOrder(poData);
       
-      if (response.success) {
+      if (response.purchaseOrder) {
         // Add line items
-        const poId = response.data.purchaseOrder.id;
+        const poId = response.purchaseOrder.id;
         
         for (const item of productData.lineItems) {
           await apiClient.addPOLineItem(poId, {
@@ -674,7 +674,7 @@ export function PurchaseOrderWizard({ onComplete, onCancel, className }: Purchas
         navigationVariant="full"
         stepVariant="card"
         animated={true}
-        onComplete={onComplete}
+        onComplete={onComplete as ((data: Record<string, any>) => void) | undefined}
         onCancel={onCancel}
       />
     </div>

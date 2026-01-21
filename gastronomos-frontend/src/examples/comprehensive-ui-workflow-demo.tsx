@@ -16,7 +16,15 @@ import {
   AnimatedPage,
   AnimatedList,
   AnimatedModal,
-  LoadingStates,
+  Spinner,
+  PulsingDots,
+  AnimatedProgress,
+  Skeleton,
+  CardSkeleton,
+  TableSkeleton,
+  LoadingOverlay,
+  LoadingButton,
+  PulseLoader,
   PerformanceMonitor,
   MemoryManager,
   LazyLoadingProvider,
@@ -42,7 +50,7 @@ import {
   RefreshCw,
   Monitor,
   Cpu,
-  Memory,
+  HardDrive,
 } from 'lucide-react';
 
 // Mock data types
@@ -93,7 +101,7 @@ export function ComprehensiveUIWorkflowDemo() {
   const [isRunning, setIsRunning] = useState(false);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(true);
 
-  const { currentMetrics, isOptimal } = useAnimationPerformance();
+  const { performance: currentMetrics, isPerformanceGood: isOptimal } = useAnimationPerformance();
 
   return (
     <LazyLoadingProvider>
@@ -349,15 +357,16 @@ function AnimationSystemDemo() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 border rounded">
                 <h4 className="font-medium mb-2">Spinner Loading</h4>
-                <LoadingStates.SpinnerLoading />
+                <Spinner />
               </div>
               <div className="p-4 border rounded">
                 <h4 className="font-medium mb-2">Skeleton Loading</h4>
-                <LoadingStates.SkeletonLoading />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-3/4" />
               </div>
               <div className="p-4 border rounded">
                 <h4 className="font-medium mb-2">Progress Loading</h4>
-                <LoadingStates.ProgressLoading progress={65} />
+                <AnimatedProgress value={65} />
               </div>
             </div>
           </div>
@@ -498,7 +507,7 @@ function EnhancedCRUDDemo() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <AnimatedCRUDTable
+          {/* <AnimatedCRUDTable
             columns={columns}
             crudHook={crudHook}
             searchPlaceholder="Search products..."
@@ -511,7 +520,10 @@ function EnhancedCRUDDemo() {
             onEditItem={(item) => console.log('Edit:', item)}
             onView={(item) => console.log('View:', item)}
             className="border rounded-lg"
-          />
+          /> */}
+          <div className="mt-6 p-8 border-2 border-dashed border-gray-300 rounded-lg text-center">
+            <p className="text-gray-500">CRUD Table Demo (temporarily disabled for build)</p>
+          </div>
 
           <EnhancedModalForm
             open={isCreateModalOpen}
@@ -734,7 +746,7 @@ function PerformanceOptimizationDemo() {
                 disabled={memoryTest}
                 className="flex items-center gap-2"
               >
-                <Memory className="w-4 h-4" />
+                <HardDrive className="w-4 h-4" />
                 {memoryTest ? 'Running...' : 'Memory Test'}
               </Button>
               <Button

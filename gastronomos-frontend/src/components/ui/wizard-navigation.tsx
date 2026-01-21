@@ -357,7 +357,7 @@ export function WizardBreadcrumb({
             <span className="truncate max-w-24">{step.title}</span>
           </motion.button>
           
-          {index < wizard.config.steps.length - 1 && (
+          {index < (wizard.config?.steps.length ?? 0) - 1 && (
             <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
           )}
         </React.Fragment>

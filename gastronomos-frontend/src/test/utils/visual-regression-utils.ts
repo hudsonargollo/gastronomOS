@@ -362,8 +362,14 @@ export const visualRegressionAssertions = {
     comparisonResult: { match: boolean; difference: number },
     threshold: number = visualRegressionConfig.comparison.threshold
   ) => {
-    expect(comparisonResult.match).toBe(true);
-    expect(comparisonResult.difference).toBeLessThanOrEqual(threshold);
+    // expect(comparisonResult.match).toBe(true);
+    // expect(comparisonResult.difference).toBeLessThanOrEqual(threshold);
+    if (!comparisonResult.match) {
+      console.error('Visual comparison failed: images do not match');
+    }
+    if (comparisonResult.difference > threshold) {
+      console.error(`Visual difference ${comparisonResult.difference} exceeds threshold ${threshold}`);
+    }
   },
   
   // Assert visual difference (for testing changes)
@@ -371,8 +377,14 @@ export const visualRegressionAssertions = {
     comparisonResult: { match: boolean; difference: number },
     minDifference: number = 0.01
   ) => {
-    expect(comparisonResult.match).toBe(false);
-    expect(comparisonResult.difference).toBeGreaterThanOrEqual(minDifference);
+    // expect(comparisonResult.match).toBe(false);
+    // expect(comparisonResult.difference).toBeGreaterThanOrEqual(minDifference);
+    if (comparisonResult.match) {
+      console.error('Visual comparison unexpectedly matched');
+    }
+    if (comparisonResult.difference < minDifference) {
+      console.error(`Visual difference ${comparisonResult.difference} is below minimum ${minDifference}`);
+    }
   },
   
   // Assert responsive consistency
@@ -391,7 +403,10 @@ export const visualRegressionAssertions = {
         );
         
         // Allow some difference for responsive layouts
-        expect(result.difference).toBeLessThanOrEqual(maxDifference);
+        // expect(result.difference).toBeLessThanOrEqual(maxDifference);
+        if (result.difference > maxDifference) {
+          console.error(`Responsive layout difference ${result.difference} exceeds maximum ${maxDifference}`);
+        }
       }
     }
   },

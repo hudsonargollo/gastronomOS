@@ -426,7 +426,7 @@ export function useFocusTrap(isActive: boolean) {
   React.useEffect(() => {
     if (!isActive || !containerRef.current) return;
     
-    return keyboardNavigation.trapFocus(containerRef);
+    return keyboardNavigation.trapFocus(containerRef as React.RefObject<HTMLElement>);
   }, [isActive]);
   
   return containerRef;

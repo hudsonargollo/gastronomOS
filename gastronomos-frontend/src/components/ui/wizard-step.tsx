@@ -169,11 +169,11 @@ export function WizardStep({
         transition={animated ? { ...transitions.default, delay: 0.4 } : { duration: 0 }}
       >
         {React.isValidElement(children)
-          ? React.cloneElement(children as React.ReactElement, {
+          ? React.cloneElement(children as React.ReactElement<any>, {
               stepData: localData,
               wizardData,
               onDataChange: handleDataChange,
-            })
+            } as any)
           : children}
       </motion.div>
 
@@ -303,11 +303,12 @@ export function createWizardStep<T = any>(
   }
 ) {
   const WizardStepWrapper = (props: WizardStepComponentProps) => {
+    const { title: propsTitle, description: propsDescription, ...restProps } = props;
     return (
       <WizardStep
-        title={config?.title || 'Step'}
-        description={config?.description}
-        {...props}
+        title={config?.title || propsTitle || 'Step'}
+        description={config?.description || propsDescription}
+        {...restProps}
       >
         {React.createElement(component, {
           stepData: props.stepData,

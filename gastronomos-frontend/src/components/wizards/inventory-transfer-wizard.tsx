@@ -829,7 +829,7 @@ export function InventoryTransferWizard({ onComplete, onCancel, className }: Inv
         navigationVariant="full"
         stepVariant="card"
         animated={true}
-        onComplete={onComplete}
+        onComplete={onComplete as ((data: Record<string, any>) => void) | undefined}
         onCancel={onCancel}
       />
     </div>

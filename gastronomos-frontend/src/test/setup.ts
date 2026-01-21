@@ -126,7 +126,7 @@ Object.defineProperty(window, 'cancelAnimationFrame', {
 });
 
 // Global test utilities
-global.testUtils = {
+(global as any).testUtils = {
   // Animation test helpers
   waitForAnimation: (duration = 300) => new Promise(resolve => setTimeout(resolve, duration)),
   

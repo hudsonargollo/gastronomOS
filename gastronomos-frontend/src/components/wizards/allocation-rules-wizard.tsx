@@ -838,7 +838,7 @@ export function AllocationRulesWizard({ onComplete, onCancel, className }: Alloc
 
       const response = await apiClient.createAllocation(allocationData);
       
-      if (response.success) {
+      if (response.allocation) {
         // Call completion callback
         onComplete?.({
           name: ruleData.name,
@@ -928,7 +928,7 @@ export function AllocationRulesWizard({ onComplete, onCancel, className }: Alloc
         navigationVariant="full"
         stepVariant="card"
         animated={true}
-        onComplete={onComplete}
+        onComplete={onComplete as ((data: Record<string, any>) => void) | undefined}
         onCancel={onCancel}
       />
     </div>

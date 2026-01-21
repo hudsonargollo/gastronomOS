@@ -212,21 +212,21 @@ export function ErrorMessageHandlerProvider({
         type: 'refresh',
         label: 'Refresh Page',
         description: 'Reload the current page',
-        action: () => window.location.reload(),
+        action: () => { window.location.reload(); },
         icon: <RefreshCw className="h-4 w-4" />,
       },
       {
         type: 'navigate',
         label: 'Go Home',
         description: 'Return to the home page',
-        action: () => window.location.href = '/',
+        action: () => { window.location.href = '/'; },
         icon: <Home className="h-4 w-4" />,
       },
       {
         type: 'contact_support',
         label: 'Contact Support',
         description: 'Get help from our support team',
-        action: () => window.open('mailto:support@gastronomos.com', '_blank'),
+        action: () => { window.open('mailto:support@gastronomos.com', '_blank'); },
         icon: <Mail className="h-4 w-4" />,
       },
     ];
@@ -245,7 +245,7 @@ export function ErrorMessageHandlerProvider({
           type: 'retry',
           label: 'Try Again',
           description: 'Retry the failed operation',
-          action: () => window.location.reload(),
+          action: () => { window.location.reload(); },
           isPrimary: true,
           icon: <RefreshCw className="h-4 w-4" />,
         });
@@ -256,7 +256,7 @@ export function ErrorMessageHandlerProvider({
           type: 'navigate',
           label: 'Sign In',
           description: 'Go to the sign in page',
-          action: () => window.location.href = '/login',
+          action: () => { window.location.href = '/login'; },
           isPrimary: true,
           icon: <ArrowLeft className="h-4 w-4" />,
         });
@@ -267,7 +267,7 @@ export function ErrorMessageHandlerProvider({
           type: 'navigate',
           label: 'Go Back',
           description: 'Return to the previous page',
-          action: () => window.history.back(),
+          action: () => { window.history.back(); },
           isPrimary: true,
           icon: <ArrowLeft className="h-4 w-4" />,
         });
@@ -279,7 +279,7 @@ export function ErrorMessageHandlerProvider({
           type: 'retry',
           label: 'Try Again',
           description: 'Retry the failed operation',
-          action: () => window.location.reload(),
+          action: () => { window.location.reload(); },
           isPrimary: true,
           icon: <RefreshCw className="h-4 w-4" />,
         });

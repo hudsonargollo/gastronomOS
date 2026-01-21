@@ -151,7 +151,7 @@ export const animationPropertyHelpers = {
     animationFn: (duration: number) => Promise<void>,
     tolerance: number = 50 // ms tolerance
   ) => {
-    return fc.property(arbitraries.animationDuration, async (duration) => {
+    return fc.asyncProperty(arbitraries.animationDuration, async (duration) => {
       const startTime = performance.now();
       await animationFn(duration * 1000); // Convert to ms
       const actualDuration = performance.now() - startTime;
@@ -166,7 +166,7 @@ export const animationPropertyHelpers = {
     animationFn: () => Promise<number[]>, // Returns array of frame times
     minFps: number = 30
   ) => {
-    return fc.property(fc.constant(null), async () => {
+    return fc.asyncProperty(fc.constant(null), async () => {
       const frameTimes = await animationFn();
       if (frameTimes.length < 2) return true;
       
@@ -216,7 +216,7 @@ export const crudPropertyHelpers = {
     listFn: () => Promise<T[]>,
     arbitrary: fc.Arbitrary<Omit<T, 'id'>>
   ) => {
-    return fc.property(arbitrary, async (item) => {
+    return fc.asyncProperty(arbitrary, async (item) => {
       const initialList = await listFn();
       const initialSize = initialList.length;
       
@@ -235,7 +235,7 @@ export const crudPropertyHelpers = {
     listFn: () => Promise<T[]>,
     arbitrary: fc.Arbitrary<{ id: string; updates: Partial<T> }>
   ) => {
-    return fc.property(arbitrary, async ({ id, updates }) => {
+    return fc.asyncProperty(arbitrary, async ({ id, updates }) => {
       const initialList = await listFn();
       const otherItems = initialList.filter(item => item.id !== id);
       
@@ -254,7 +254,7 @@ export const crudPropertyHelpers = {
     listFn: () => Promise<T[]>,
     arbitrary: fc.Arbitrary<string>
   ) => {
-    return fc.property(arbitrary, async (id) => {
+    return fc.asyncProperty(arbitrary, async (id) => {
       const initialList = await listFn();
       const itemExists = initialList.some(item => item.id === id);
       

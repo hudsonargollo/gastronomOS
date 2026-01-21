@@ -22,7 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useComprehensiveErrorHandling } from '@/components/ui/comprehensive-error-handler';
+// import { ComprehensiveErrorHandler } from '@/components/ui/comprehensive-error-handler';
 import { AnimationErrorTrigger } from '@/components/ui/animation-error-boundary';
 import { PerformanceConditional } from '@/components/ui/performance-degradation-handler';
 
@@ -30,19 +30,46 @@ export default function ComprehensiveErrorHandlingDemo() {
   const [triggerAnimationError, setTriggerAnimationError] = useState(false);
   const [simulateSlowPerformance, setSimulateSlowPerformance] = useState(false);
   
-  const {
-    reportError,
-    reportValidationError,
-    reportNetworkError,
-    reportServerError,
-    networkStatus,
-    networkErrors,
-    performanceLevel,
-    performanceMetrics,
-    isPerformanceDegraded,
-    handleAsyncOperation,
-    handleSyncOperation,
-  } = useComprehensiveErrorHandling();
+  // Mock error handling functions for demo
+  const reportError = (error: Error, type: string, context?: any) => {
+    console.error('Demo error:', error, type, context);
+  };
+  
+  const reportValidationError = (message: string, details?: string) => {
+    console.error('Demo validation error:', message, details);
+  };
+  
+  const reportNetworkError = (context: any) => {
+    console.error('Demo network error:', context);
+  };
+  
+  const reportServerError = (context: any) => {
+    console.error('Demo server error:', context);
+  };
+  
+  const handleAsyncOperation = async (operation: () => Promise<any>, context?: any) => {
+    try {
+      return await operation();
+    } catch (error) {
+      console.error('Demo async error:', error, context);
+      return null;
+    }
+  };
+  
+  const handleSyncOperation = (operation: () => any, fallback: any, context?: any) => {
+    try {
+      return operation();
+    } catch (error) {
+      console.error('Demo sync error:', error, context);
+      return fallback;
+    }
+  };
+  
+  const networkStatus = { isOnline: true, isConnected: true, latency: 45 };
+  const networkErrors = [];
+  const performanceLevel = 'high';
+  const performanceMetrics = { fps: 60, memory: 128 };
+  const isPerformanceDegraded = false;
 
   // Simulate different types of errors
   const simulateClientError = () => {

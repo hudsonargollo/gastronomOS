@@ -139,7 +139,7 @@ export function getOptimizedTransition(customDuration?: number): Transition {
   
   return {
     duration,
-    ease: config.easing,
+    ease: config.easing as any,
     type: 'tween',
   };
 }

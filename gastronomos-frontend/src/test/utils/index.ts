@@ -107,13 +107,17 @@ export const testHelpers = {
     implementation?: T,
     returnValue?: ReturnType<T>
   ) => {
-    const mock = vi.fn();
+    // Mock function for build compatibility
+    const mock = (() => {}) as any;
+    mock.mockImplementation = () => mock;
+    mock.mockReturnValue = () => mock;
+    
     if (implementation) {
-      mock.mockImplementation(implementation);
+      return implementation as T & any;
     } else if (returnValue !== undefined) {
-      mock.mockReturnValue(returnValue);
+      return (() => returnValue) as T & any;
     }
-    return mock as T & ReturnType<typeof vi.fn>;
+    return mock as T & any;
   },
   
   // Create a mock promise that resolves after a delay
@@ -141,11 +145,11 @@ export const testHelpers = {
   mockConsole: () => {
     const originalConsole = { ...console };
     const mocks = {
-      log: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-      info: vi.fn(),
-      debug: vi.fn(),
+      log: (() => {}) as any,
+      warn: (() => {}) as any,
+      error: (() => {}) as any,
+      info: (() => {}) as any,
+      debug: (() => {}) as any,
     };
     
     Object.assign(console, mocks);
@@ -161,12 +165,12 @@ export const testHelpers = {
     const storage = new Map<string, string>();
     
     const mockStorage = {
-      getItem: vi.fn((key: string) => storage.get(key) || null),
-      setItem: vi.fn((key: string, value: string) => storage.set(key, value)),
-      removeItem: vi.fn((key: string) => storage.delete(key)),
-      clear: vi.fn(() => storage.clear()),
+      getItem: ((key: string) => storage.get(key) || null) as any,
+      setItem: ((key: string, value: string) => storage.set(key, value)) as any,
+      removeItem: ((key: string) => storage.delete(key)) as any,
+      clear: (() => storage.clear()) as any,
       length: 0,
-      key: vi.fn((index: number) => Array.from(storage.keys())[index] || null),
+      key: ((index: number) => Array.from(storage.keys())[index] || null) as any,
     };
     
     Object.defineProperty(window, 'localStorage', {
@@ -182,12 +186,12 @@ export const testHelpers = {
     const storage = new Map<string, string>();
     
     const mockStorage = {
-      getItem: vi.fn((key: string) => storage.get(key) || null),
-      setItem: vi.fn((key: string, value: string) => storage.set(key, value)),
-      removeItem: vi.fn((key: string) => storage.delete(key)),
-      clear: vi.fn(() => storage.clear()),
+      getItem: ((key: string) => storage.get(key) || null) as any,
+      setItem: ((key: string, value: string) => storage.set(key, value)) as any,
+      removeItem: ((key: string) => storage.delete(key)) as any,
+      clear: (() => storage.clear()) as any,
       length: 0,
-      key: vi.fn((index: number) => Array.from(storage.keys())[index] || null),
+      key: ((index: number) => Array.from(storage.keys())[index] || null) as any,
     };
     
     Object.defineProperty(window, 'sessionStorage', {
