@@ -13,9 +13,9 @@ import { performanceMonitor } from '@/lib/animation-config';
 export interface AnimatedPageProps {
   children: React.ReactNode;
   transition?: Transition;
-  initial?: string | Variants;
-  animate?: string | Variants;
-  exit?: string | Variants;
+  initial?: string;
+  animate?: string;
+  exit?: string;
   className?: string;
   layoutId?: string;
   onAnimationStart?: () => void;

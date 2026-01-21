@@ -13,28 +13,43 @@ const inputVariants = {
   },
 }
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+function Input({ className, type, ...allProps }: React.ComponentProps<"input">) {
   const [isFocused, setIsFocused] = React.useState(false)
   const [hasError, setHasError] = React.useState(false)
+
+  // Separate conflicting props to avoid conflicts with Framer Motion
+  const { 
+    onDrag, 
+    onDragEnd, 
+    onDragStart, 
+    onFocus, 
+    onBlur,
+    onAnimationStart,
+    onAnimationEnd,
+    onAnimationIteration,
+    ...props 
+  } = allProps
 
   React.useEffect(() => {
     // Check for aria-invalid to trigger error animation
     setHasError(props['aria-invalid'] === true || props['aria-invalid'] === 'true')
-  }, [props['aria-invalid']])
+  }, [props])
 
   const motionProps: MotionProps = {
     variants: inputVariants,
     initial: "initial",
     animate: hasError ? "error" : isFocused ? "focus" : "initial",
     transition: transitions.fast,
-    onFocus: (e) => {
-      setIsFocused(true)
-      props.onFocus?.(e)
-    },
-    onBlur: (e) => {
-      setIsFocused(false)
-      props.onBlur?.(e)
-    },
+  }
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    setIsFocused(true)
+    onFocus?.(e)
+  }
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    setIsFocused(false)
+    onBlur?.(e)
   }
 
   return (
@@ -47,7 +62,10 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
         "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
         className
       )}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
       {...motionProps}
+      {...props}
       {...props}
     />
   )

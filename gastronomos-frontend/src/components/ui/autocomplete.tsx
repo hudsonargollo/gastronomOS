@@ -361,4 +361,3 @@ const Autocomplete: React.FC<AutocompleteProps> = ({
 }
 
 export { Autocomplete }
-export type { AutocompleteOption }

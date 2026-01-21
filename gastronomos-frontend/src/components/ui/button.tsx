@@ -38,6 +38,13 @@ const buttonVariants = cva(
   }
 )
 
+interface ButtonProps
+  extends Omit<React.ComponentProps<"button">, keyof MotionProps>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+  children?: React.ReactNode
+}
+
 function Button({
   className,
   variant = "default",
@@ -45,12 +52,7 @@ function Button({
   asChild = false,
   disabled = false,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
-  const Comp = asChild ? Slot : motion.button
-
+}: ButtonProps) {
   const motionProps: MotionProps = {
     variants: animationVariants,
     initial: "initial",
@@ -59,14 +61,26 @@ function Button({
     transition: transitions.fast,
   }
 
+  if (asChild) {
+    return (
+      <Slot
+        data-slot="button"
+        data-variant={variant}
+        data-size={size}
+        className={cn(buttonVariants({ variant, size, className }))}
+        {...props}
+      />
+    )
+  }
+
   return (
-    <Comp
+    <motion.button
       data-slot="button"
       data-variant={variant}
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
       disabled={disabled}
-      {...(asChild ? {} : motionProps)}
+      {...motionProps}
       {...props}
     />
   )

@@ -354,7 +354,7 @@ export function PerformanceDegradationProvider({
       }
     },
 
-    getDegradedValue: <T>(normal: T, degraded: T, feature?: string): T => {
+    getDegradedValue: (normal: any, degraded: any, feature?: string): any => {
       if (state.level === 'none') return normal;
       if (feature && !utils.shouldDegrade(feature)) return normal;
       return degraded;
@@ -473,7 +473,7 @@ export function usePerformanceConditional() {
 
   return {
     shouldRender: (feature: string) => utils.isFeatureEnabled(feature),
-    getValue: <T>(normal: T, degraded: T, feature?: string) => 
+    getValue: (normal: any, degraded: any, feature?: string) => 
       utils.getDegradedValue(normal, degraded, feature),
     isEnabled: (feature: string) => utils.isFeatureEnabled(feature),
   };

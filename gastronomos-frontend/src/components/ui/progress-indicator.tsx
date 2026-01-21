@@ -103,7 +103,7 @@ export function ProgressIndicator({
                   isUpcoming && 'bg-muted border-muted-foreground/30 text-muted-foreground',
                   isHorizontal ? 'mb-2' : 'mr-3'
                 )}
-                initial={animated ? { scale: 0.8, opacity: 0 } : false}
+                initial={animated ? { scale: 0.8, opacity: 0 } : undefined}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={animated ? { ...transitions.spring, delay: index * 0.1 } : { duration: 0 }}
                 whileHover={animated ? { scale: 1.05 } : {}}
@@ -112,9 +112,9 @@ export function ProgressIndicator({
                   {isCompleted && !hasError ? (
                     <motion.div
                       key="completed"
-                      initial={animated ? { scale: 0, rotate: -180 } : false}
+                      initial={animated ? { scale: 0, rotate: -180 } : undefined}
                       animate={{ scale: 1, rotate: 0 }}
-                      exit={animated ? { scale: 0, rotate: 180 } : false}
+                      exit={animated ? { scale: 0, rotate: 180 } : undefined}
                       transition={animated ? transitions.spring : { duration: 0 }}
                     >
                       <Check className="w-4 h-4" />
@@ -122,9 +122,9 @@ export function ProgressIndicator({
                   ) : hasError ? (
                     <motion.div
                       key="error"
-                      initial={animated ? { scale: 0 } : false}
+                      initial={animated ? { scale: 0 } : undefined}
                       animate={{ scale: 1 }}
-                      exit={animated ? { scale: 0 } : false}
+                      exit={animated ? { scale: 0 } : undefined}
                       transition={animated ? transitions.spring : { duration: 0 }}
                     >
                       <AlertCircle className="w-4 h-4" />
@@ -132,9 +132,9 @@ export function ProgressIndicator({
                   ) : isCurrent ? (
                     <motion.div
                       key="current"
-                      initial={animated ? { scale: 0 } : false}
+                      initial={animated ? { scale: 0 } : undefined}
                       animate={{ scale: 1 }}
-                      exit={animated ? { scale: 0 } : false}
+                      exit={animated ? { scale: 0 } : undefined}
                       transition={animated ? transitions.spring : { duration: 0 }}
                     >
                       <Circle className="w-3 h-3 fill-current" />
@@ -142,9 +142,9 @@ export function ProgressIndicator({
                   ) : (
                     <motion.span
                       key="number"
-                      initial={animated ? { opacity: 0 } : false}
+                      initial={animated ? { opacity: 0 } : undefined}
                       animate={{ opacity: 1 }}
-                      exit={animated ? { opacity: 0 } : false}
+                      exit={animated ? { opacity: 0 } : undefined}
                       transition={animated ? transitions.default : { duration: 0 }}
                     >
                       {index + 1}
@@ -174,7 +174,7 @@ export function ProgressIndicator({
                     'text-center',
                     isHorizontal ? 'max-w-24' : 'flex-1'
                   )}
-                  initial={animated ? { opacity: 0, y: 10 } : false}
+                  initial={animated ? { opacity: 0, y: 10 } : undefined}
                   animate={{ opacity: 1, y: 0 }}
                   transition={animated ? { ...transitions.default, delay: index * 0.1 + 0.2 } : { duration: 0 }}
                 >
@@ -214,7 +214,7 @@ export function ProgressIndicator({
                     'bg-primary',
                     isHorizontal ? 'h-full' : 'w-full'
                   )}
-                  initial={animated ? (isHorizontal ? { width: 0 } : { height: 0 }) : false}
+                  initial={animated ? (isHorizontal ? { width: 0 } : { height: 0 }) : undefined}
                   animate={
                     isCompleted
                       ? isHorizontal
@@ -268,7 +268,7 @@ export function SimpleProgress({
         {showPercentage && (
           <motion.span
             className="text-sm font-medium text-muted-foreground"
-            initial={animated ? { opacity: 0 } : false}
+            initial={animated ? { opacity: 0 } : undefined}
             animate={{ opacity: 1 }}
             transition={animated ? transitions.default : { duration: 0 }}
           >
@@ -279,7 +279,7 @@ export function SimpleProgress({
       <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
         <motion.div
           className={cn('h-full rounded-full', colorClasses[color])}
-          initial={animated ? { width: 0 } : false}
+          initial={animated ? { width: 0 } : undefined}
           animate={{ width: `${percentage}%` }}
           transition={animated ? transitions.smooth : { duration: 0 }}
         />
@@ -342,7 +342,7 @@ export function CircularProgress({
           fill="transparent"
           strokeLinecap="round"
           strokeDasharray={strokeDasharray}
-          initial={animated ? { strokeDashoffset: circumference } : false}
+          initial={animated ? { strokeDashoffset: circumference } : undefined}
           animate={{ strokeDashoffset }}
           transition={animated ? { ...transitions.smooth, duration: 1 } : { duration: 0 }}
         />
@@ -350,7 +350,7 @@ export function CircularProgress({
       {showValue && (
         <motion.div
           className="absolute inset-0 flex items-center justify-center"
-          initial={animated ? { opacity: 0, scale: 0.5 } : false}
+          initial={animated ? { opacity: 0, scale: 0.5 } : undefined}
           animate={{ opacity: 1, scale: 1 }}
           transition={animated ? { ...transitions.spring, delay: 0.5 } : { duration: 0 }}
         >

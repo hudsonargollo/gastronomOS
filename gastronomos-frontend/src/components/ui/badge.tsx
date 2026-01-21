@@ -14,8 +14,9 @@ import { ariaAttributes } from "@/lib/accessibility"
 const badgeVariants = badgeStyles
 
 interface BadgeProps
-  extends Omit<React.ComponentProps<"div">, 'onDrag'>,
+  extends Omit<React.ComponentProps<"div">, keyof MotionProps>,
     VariantProps<typeof badgeVariants> {
+  children?: React.ReactNode
   animated?: boolean
   interactive?: boolean
   dismissible?: boolean
@@ -62,11 +63,12 @@ function Badge({
     return null
   }
 
+  const componentProps = animated ? { ...motionProps, ...props } : props;
+
   return (
     <Component
       className={cn(badgeVariants({ variant, size }), className)}
-      {...motionProps}
-      {...props}
+      {...componentProps}
     >
       {icon && (
         <span className="mr-1 flex-shrink-0">

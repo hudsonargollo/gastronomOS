@@ -618,19 +618,22 @@ function NetworkStatusIndicator() {
 export function useNetworkOperation() {
   const { actions } = useNetworkErrorHandler();
 
-  const executeWithErrorHandling = useCallback(async <T>(
-    operation: () => Promise<T>,
-    context?: NetworkError['context']
-  ): Promise<T | null> => {
-    try {
-      return await operation();
-    } catch (error) {
-      if (error instanceof Error) {
-        actions.reportError(error, context);
+  const executeWithErrorHandling = useCallback(
+    async (
+      operation: () => Promise<any>,
+      context?: NetworkError['context']
+    ): Promise<any | null> => {
+      try {
+        return await operation();
+      } catch (error) {
+        if (error instanceof Error) {
+          actions.reportError(error, context);
+        }
+        return null;
       }
-      return null;
-    }
-  }, [actions]);
+    },
+    [actions]
+  );
 
   return { executeWithErrorHandling };
 }

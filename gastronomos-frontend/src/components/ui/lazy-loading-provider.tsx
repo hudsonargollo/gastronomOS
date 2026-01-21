@@ -216,7 +216,7 @@ export function useLazyLoading() {
 }
 
 // Lazy image component
-export interface LazyImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+export interface LazyImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'onError'> {
   src: string;
   alt: string;
   placeholder?: React.ReactNode;
@@ -235,12 +235,23 @@ export function LazyImage({
   onError,
   preload = false,
   className = '',
-  ...props
+  ...allProps
 }: LazyImageProps) {
   const { loadAsset, getAssetState, preloadAsset } = useLazyLoading();
   const [isInView, setIsInView] = useState(false);
   const imgRef = useRef<HTMLDivElement>(null);
   const assetState = getAssetState(src);
+
+  // Exclude conflicting props
+  const { 
+    onDrag, 
+    onDragEnd, 
+    onDragStart,
+    onAnimationStart,
+    onAnimationEnd,
+    onAnimationIteration,
+    ...props 
+  } = allProps;
 
   // Intersection observer for lazy loading
   useEffect(() => {

@@ -11,6 +11,7 @@ export interface AnimationPerformance {
   frameDrops: number;
   memoryUsage: number;
   lastMeasurement: number;
+  renderTime?: number;
 }
 
 // Animation configuration interface
@@ -22,6 +23,7 @@ export interface AnimationConfig {
   mass?: number;
   reducedMotion: boolean;
   performanceMode: 'high' | 'medium' | 'low';
+  maxConcurrentAnimations?: number;
 }
 
 // Global animation configuration
@@ -33,6 +35,7 @@ export const defaultAnimationConfig: AnimationConfig = {
   mass: 1,
   reducedMotion: false,
   performanceMode: 'high',
+  maxConcurrentAnimations: 10,
 };
 
 // Performance monitoring state
@@ -41,6 +44,7 @@ let performanceState: AnimationPerformance = {
   frameDrops: 0,
   memoryUsage: 0,
   lastMeasurement: Date.now(),
+  renderTime: 0,
 };
 
 // Performance monitoring utilities

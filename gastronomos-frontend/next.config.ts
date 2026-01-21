@@ -4,6 +4,12 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   
+  // Static export for Cloudflare Pages
+  output: 'export',
+  trailingSlash: true,
+  skipTrailingSlashRedirect: true,
+  distDir: 'out',
+  
   // Performance optimizations
   experimental: {
     optimizePackageImports: [
@@ -57,11 +63,9 @@ const nextConfig: NextConfig = {
     return config;
   },
   
-  // Image optimization
+  // Image optimization - disabled for static export
   images: {
-    formats: ['image/webp', 'image/avif'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    unoptimized: true,
   },
   
   // Compression
