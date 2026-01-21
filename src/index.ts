@@ -187,6 +187,8 @@ app.use('*', cors({
     'https://46e0e617.gastronomos-frontend.pages.dev',
     'https://d4d079d5.gastronomos-frontend.pages.dev',
     'https://dac868cd.gastronomos-frontend.pages.dev',
+    'https://6bf8e242.gastronomos-frontend.pages.dev',
+    'https://a3facd51.gastronomos-frontend.pages.dev',
     'https://gastronomos-frontend.pages.dev'
   ],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],

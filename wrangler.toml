@@ -2,6 +2,7 @@ name = "gastronomos"
 main = "src/index.ts"
 compatibility_date = "2023-12-18"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
 
 # Development environment configuration
 [env.development.vars]
