@@ -12,12 +12,10 @@ import {
   SearchFilter,
   ExportData,
   ConfirmationDialog,
-  LoadingSpinner,
-  EmptyState,
-  ErrorState,
-  ResponsiveGrid,
-  ResponsiveContainer,
+  Skeleton,
+  LoadingOverlay,
 } from "@/components/ui"
+import { ResponsiveGrid, ResponsiveContainer } from "@/components/layout"
 import { useCategories } from "@/hooks/use-crud"
 import { useConfirmationDialog } from "@/components/ui/confirmation-dialog"
 
@@ -194,6 +192,8 @@ export function ComprehensiveCrudExample() {
   }
 
   const handleBulkDelete = (items: Category[]) => {
+    if (!bulkDelete) return;
+    
     openDialog({
       title: "Delete Categories",
       description: `Are you sure you want to delete ${items.length} categories? This action cannot be undone.`,
@@ -207,9 +207,9 @@ export function ComprehensiveCrudExample() {
 
   const handleFormSubmit = async (data: CategoryFormData) => {
     if (editingItem) {
-      await update(editingItem.id, data)
+      await update(editingItem.id, data as any)
     } else {
-      await create(data)
+      await create(data as any)
     }
     setIsModalOpen(false)
     setEditingItem(null)
@@ -226,7 +226,7 @@ export function ComprehensiveCrudExample() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Categories</h1>
-            <LoadingSpinner text="Loading categories..." />
+            <div className="text-muted-foreground">Loading categories...</div>
           </div>
         </div>
       </ResponsiveContainer>
@@ -237,12 +237,11 @@ export function ComprehensiveCrudExample() {
   if (error) {
     return (
       <ResponsiveContainer>
-        <ErrorState
-          title="Failed to load categories"
-          description="There was an error loading the categories. Please try again."
-          error={error}
-          onRetry={refresh}
-        />
+        <div className="text-center py-8">
+          <h2 className="text-lg font-semibold text-destructive">Failed to load categories</h2>
+          <p className="text-muted-foreground mt-2">There was an error loading the categories. Please try again.</p>
+          <Button onClick={refresh} className="mt-4">Retry</Button>
+        </div>
       </ResponsiveContainer>
     )
   }
@@ -276,18 +275,18 @@ export function ComprehensiveCrudExample() {
 
         {/* Data Table */}
         {categories.length === 0 && !loading ? (
-          <EmptyState
-            title="No categories found"
-            description="Get started by creating your first category."
-            action={{
-              label: "Add Category",
-              onClick: handleCreate,
-            }}
-          />
+          <div className="text-center py-12">
+            <h3 className="text-lg font-semibold">No categories found</h3>
+            <p className="text-muted-foreground mt-2">Get started by creating your first category.</p>
+            <Button onClick={handleCreate} className="mt-4">
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Add Category
+            </Button>
+          </div>
         ) : (
           <DataTable
             columns={columns}
-            data={categories}
+            data={categories as Category[]}
             loading={loading}
             onEdit={handleEdit}
             onDelete={handleDelete}

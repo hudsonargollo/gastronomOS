@@ -122,10 +122,72 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Enhanced focus styles for better accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  
+  /* Skip link for keyboard navigation */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:border focus:rounded-md;
+  }
 }
 
-/* Mobile-optimized utilities */
+/* Accessibility utilities */
 @layer utilities {
+  /* Screen reader only content */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+  .sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: inherit;
+    margin: inherit;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .contrast-more\:border-2 {
+      border-width: 2px;
+    }
+    
+    .contrast-more\:border-current {
+      border-color: currentColor;
+    }
+  }
+  
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .motion-reduce\:transition-none {
+      transition: none;
+    }
+    
+    .motion-reduce\:animate-none {
+      animation: none;
+    }
+    
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
   /* Better touch targets for mobile */
   .touch-target {
     @apply min-h-[44px] min-w-[44px];
@@ -254,5 +316,22 @@
   /* Better mobile line clamping */
   .line-clamp-mobile {
     @apply line-clamp-2 sm:line-clamp-3;
+  }
+  
+  /* Design system utilities */
+  .design-system-focus {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+  
+  .design-system-interactive {
+    @apply transition-all duration-150 ease-out hover:scale-[1.02] active:scale-[0.98];
+  }
+  
+  .design-system-disabled {
+    @apply disabled:pointer-events-none disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+  
+  .design-system-loading {
+    @apply cursor-wait opacity-70 pointer-events-none;
   }
 }

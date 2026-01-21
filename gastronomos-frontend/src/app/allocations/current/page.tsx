@@ -1,13 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { GastronomyIcons } from '@/components/icons/gastronomy-icons';
-import { Edit, Eye, RotateCcw } from 'lucide-react';
+import { Edit, Eye, RotateCcw, Wand2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { AllocationRulesWizard } from '@/components/wizards/allocation-rules-wizard';
+import { AnimatedModal, AnimatedModalContent, AnimatedModalHeader, AnimatedModalTitle } from '@/components/ui/animated-modal';
+import { toast } from 'sonner';
 
 const currentAllocations = [
   {
@@ -38,6 +41,19 @@ const currentAllocations = [
 ];
 
 export default function CurrentAllocationsPage() {
+  const [showAllocationWizard, setShowAllocationWizard] = useState(false);
+
+  const handleAllocationWizardComplete = (data: any) => {
+    console.log('Allocation wizard completed:', data);
+    setShowAllocationWizard(false);
+    toast.success('Allocation rule created successfully!', {
+      description: `Rule "${data.name}" has been created and is ${data.isActive ? 'active' : 'inactive'}.`,
+    });
+  };
+
+  const handleAllocationWizardCancel = () => {
+    setShowAllocationWizard(false);
+  };
   return (
     <MainLayout title="Current Allocations">
       <div className="p-6 space-y-6">
@@ -46,10 +62,19 @@ export default function CurrentAllocationsPage() {
             <h1 className="text-2xl font-bold text-slate-900">Current Allocations</h1>
             <p className="text-slate-600">View and manage active resource allocations</p>
           </div>
-          <Button className="bg-gradient-to-r from-orange-500 to-red-600">
-            <GastronomyIcons.Scale className="h-4 w-4 mr-2" />
-            New Allocation
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => setShowAllocationWizard(true)}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+            >
+              <Wand2 className="h-4 w-4 mr-2" />
+              Allocation Wizard
+            </Button>
+            <Button className="bg-gradient-to-r from-orange-500 to-red-600">
+              <GastronomyIcons.Scale className="h-4 w-4 mr-2" />
+              New Allocation
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
@@ -207,6 +232,20 @@ export default function CurrentAllocationsPage() {
           ))}
         </div>
       </div>
+
+      {/* Allocation Wizard Modal */}
+      <AnimatedModal open={showAllocationWizard} onOpenChange={setShowAllocationWizard}>
+        <AnimatedModalContent size="xl" className="max-w-4xl">
+          <AnimatedModalHeader>
+            <AnimatedModalTitle>Create Allocation Rule</AnimatedModalTitle>
+          </AnimatedModalHeader>
+          <AllocationRulesWizard
+            onComplete={handleAllocationWizardComplete}
+            onCancel={handleAllocationWizardCancel}
+            className="p-6"
+          />
+        </AnimatedModalContent>
+      </AnimatedModal>
     </MainLayout>
   );
 }

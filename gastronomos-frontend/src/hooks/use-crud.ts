@@ -3,10 +3,60 @@ import useSWR, { mutate } from 'swr';
 import useSWRMutation from 'swr/mutation';
 import { apiClient, PaginationParams, SearchParams } from '../lib/api';
 import { cacheKeys, mutationOptions } from '../lib/swr-config';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState, useRef } from 'react';
 import { toast } from 'sonner';
 
-// Generic CRUD hook interface
+// Animation action types for CRUD operations
+export interface AnimationAction {
+  id: string;
+  type: 'create' | 'update' | 'delete' | 'reorder' | 'bulk-delete';
+  target: string;
+  duration: number;
+  priority: number;
+  timestamp: number;
+}
+
+// Enhanced CRUD hook interface with animation states
+export interface EnhancedCRUDHook<T, CreateData = Partial<T>, UpdateData = Partial<T>> {
+  // Data and loading states
+  data: T[] | undefined;
+  loading: boolean;
+  error: Error | undefined;
+  
+  // Animation states
+  isAnimating: boolean;
+  animationQueue: AnimationAction[];
+  pendingOperations: Set<string>;
+  
+  // Pagination info
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  
+  // Enhanced CRUD operations
+  create: (data: CreateData) => Promise<T>;
+  update: (id: string, data: UpdateData) => Promise<T>;
+  delete: (id: string) => Promise<void>;
+  bulkDelete?: (ids: string[]) => Promise<void>;
+  bulkUpdate?: (items: { id: string; data: UpdateData }[]) => Promise<T[]>;
+  duplicate?: (id: string) => Promise<T>;
+  
+  // Wizard integration
+  startWizard?: (type: 'create' | 'edit' | 'bulk') => void;
+  
+  // Export functionality
+  exportData?: (format: 'csv' | 'json' | 'pdf', selectedIds?: string[]) => Promise<void>;
+  
+  // Utility functions
+  refresh: () => Promise<void>;
+  mutate: (data?: T[] | Promise<T[]>, shouldRevalidate?: boolean) => Promise<T[] | undefined>;
+  clearAnimationQueue: () => void;
+}
+
+// Legacy CRUD hook interface for backward compatibility
 export interface CRUDHook<T, CreateData = Partial<T>, UpdateData = Partial<T>> {
   // Data and loading states
   data: T[] | undefined;
@@ -32,336 +82,396 @@ export interface CRUDHook<T, CreateData = Partial<T>, UpdateData = Partial<T>> {
   mutate: (data?: T[] | Promise<T[]>, shouldRevalidate?: boolean) => Promise<T[] | undefined>;
 }
 
-// Categories CRUD hook
-export function useCategories(params?: PaginationParams & SearchParams & { parentId?: string }) {
-  const cacheKey = cacheKeys.categories(params);
+// Enhanced CRUD hook implementation
+export function useEnhancedCRUD<T extends { id: string }, CreateData = Partial<T>, UpdateData = Partial<T>>(
+  cacheKeyFn: (params?: any) => string[],
+  apiMethods: {
+    list: (params?: any) => Promise<{ data: { [key: string]: T[]; pagination?: any } }>;
+    create: (data: CreateData) => Promise<{ data: { [key: string]: T } }>;
+    update: (id: string, data: UpdateData) => Promise<{ data: { [key: string]: T } }>;
+    delete: (id: string) => Promise<void>;
+    bulkDelete?: (ids: string[]) => Promise<void>;
+    bulkUpdate?: (items: { id: string; data: UpdateData }[]) => Promise<{ data: { [key: string]: T[] } }>;
+  },
+  dataKey: string,
+  params?: any
+): EnhancedCRUDHook<T, CreateData, UpdateData> {
+  const [animationQueue, setAnimationQueue] = useState<AnimationAction[]>([]);
+  const [pendingOperations, setPendingOperations] = useState<Set<string>>(new Set());
+  const animationTimeoutRef = useRef<NodeJS.Timeout>();
+  
+  const cacheKey = cacheKeyFn(params);
   
   const { data, error, isLoading, mutate: swrMutate } = useSWR(
     cacheKey,
-    () => apiClient.getCategories(params)
+    () => apiMethods.list(params)
   );
   
   const { trigger: createTrigger } = useSWRMutation(
-    cacheKeys.categories(),
-    (_, { arg }: { arg: any }) => apiClient.createCategory(arg)
+    cacheKeyFn(),
+    (_, { arg }: { arg: CreateData }) => apiMethods.create(arg)
   );
   
   const { trigger: updateTrigger } = useSWRMutation(
     cacheKey,
-    (_, { arg }: { arg: { id: string; data: any } }) => apiClient.updateCategory(arg.id, arg.data),
+    (_, { arg }: { arg: { id: string; data: UpdateData } }) => apiMethods.update(arg.id, arg.data),
     mutationOptions.optimisticUpdate(arg => ({ id: arg.id, ...arg.data }))
   );
   
   const { trigger: deleteTrigger } = useSWRMutation(
     cacheKey,
-    (_, { arg }: { arg: string }) => apiClient.deleteCategory(arg),
+    (_, { arg }: { arg: string }) => apiMethods.delete(arg),
     mutationOptions.optimisticDelete(arg)
   );
   
   const { trigger: bulkDeleteTrigger } = useSWRMutation(
     cacheKey,
-    (_, { arg }: { arg: string[] }) => apiClient.bulkDeleteCategories(arg)
+    (_, { arg }: { arg: string[] }) => apiMethods.bulkDelete?.(arg)
   );
   
-  const create = useCallback(async (data: any) => {
-    try {
-      const result = await createTrigger(data);
-      toast.success('Category created successfully');
-      return result.data.category;
-    } catch (error) {
-      toast.error('Failed to create category');
-      throw error;
-    }
-  }, [createTrigger]);
+  const { trigger: bulkUpdateTrigger } = useSWRMutation(
+    cacheKey,
+    (_, { arg }: { arg: { id: string; data: UpdateData }[] }) => apiMethods.bulkUpdate?.(arg)
+  );
   
-  const update = useCallback(async (id: string, data: any) => {
-    try {
-      const result = await updateTrigger({ id, data });
-      toast.success('Category updated successfully');
-      return result.data.category;
-    } catch (error) {
-      toast.error('Failed to update category');
-      throw error;
+  // Animation queue management
+  const addAnimationAction = useCallback((action: Omit<AnimationAction, 'timestamp'>) => {
+    const fullAction: AnimationAction = {
+      ...action,
+      timestamp: Date.now(),
+    };
+    
+    setAnimationQueue(prev => [...prev, fullAction]);
+    
+    // Auto-clear animation after duration
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
     }
-  }, [updateTrigger]);
+    
+    animationTimeoutRef.current = setTimeout(() => {
+      setAnimationQueue(prev => prev.filter(a => a.id !== fullAction.id));
+    }, action.duration + 100);
+  }, []);
+  
+  const clearAnimationQueue = useCallback(() => {
+    setAnimationQueue([]);
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+    }
+  }, []);
+  
+  // Enhanced CRUD operations with animations
+  const create = useCallback(async (data: CreateData) => {
+    const operationId = `create-${Date.now()}`;
+    setPendingOperations(prev => new Set(prev).add(operationId));
+    
+    try {
+      addAnimationAction({
+        id: operationId,
+        type: 'create',
+        target: 'new-item',
+        duration: 300,
+        priority: 1,
+      });
+      
+      const result = await createTrigger(data);
+      toast.success('Item created successfully');
+      return result.data[dataKey];
+    } catch (error) {
+      toast.error('Failed to create item');
+      throw error;
+    } finally {
+      setPendingOperations(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(operationId);
+        return newSet;
+      });
+    }
+  }, [createTrigger, dataKey, addAnimationAction]);
+  
+  const update = useCallback(async (id: string, data: UpdateData) => {
+    const operationId = `update-${id}`;
+    setPendingOperations(prev => new Set(prev).add(operationId));
+    
+    try {
+      addAnimationAction({
+        id: operationId,
+        type: 'update',
+        target: id,
+        duration: 250,
+        priority: 2,
+      });
+      
+      const result = await updateTrigger({ id, data });
+      toast.success('Item updated successfully');
+      return result.data[dataKey];
+    } catch (error) {
+      toast.error('Failed to update item');
+      throw error;
+    } finally {
+      setPendingOperations(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(operationId);
+        return newSet;
+      });
+    }
+  }, [updateTrigger, dataKey, addAnimationAction]);
   
   const deleteItem = useCallback(async (id: string) => {
-    await deleteTrigger(id);
-  }, [deleteTrigger]);
+    const operationId = `delete-${id}`;
+    setPendingOperations(prev => new Set(prev).add(operationId));
+    
+    try {
+      addAnimationAction({
+        id: operationId,
+        type: 'delete',
+        target: id,
+        duration: 300,
+        priority: 3,
+      });
+      
+      await deleteTrigger(id);
+      toast.success('Item deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete item');
+      throw error;
+    } finally {
+      setPendingOperations(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(operationId);
+        return newSet;
+      });
+    }
+  }, [deleteTrigger, addAnimationAction]);
   
   const bulkDelete = useCallback(async (ids: string[]) => {
-    await bulkDeleteTrigger(ids);
-  }, [bulkDeleteTrigger]);
+    if (!apiMethods.bulkDelete) {
+      throw new Error('Bulk delete not supported');
+    }
+    
+    const operationId = `bulk-delete-${Date.now()}`;
+    setPendingOperations(prev => new Set(prev).add(operationId));
+    
+    try {
+      addAnimationAction({
+        id: operationId,
+        type: 'bulk-delete',
+        target: ids.join(','),
+        duration: 400,
+        priority: 4,
+      });
+      
+      await bulkDeleteTrigger(ids);
+      toast.success(`${ids.length} items deleted successfully`);
+    } catch (error) {
+      toast.error('Failed to delete items');
+      throw error;
+    } finally {
+      setPendingOperations(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(operationId);
+        return newSet;
+      });
+    }
+  }, [bulkDeleteTrigger, addAnimationAction]);
+  
+  const bulkUpdate = useCallback(async (items: { id: string; data: UpdateData }[]) => {
+    if (!apiMethods.bulkUpdate) {
+      throw new Error('Bulk update not supported');
+    }
+    
+    const operationId = `bulk-update-${Date.now()}`;
+    setPendingOperations(prev => new Set(prev).add(operationId));
+    
+    try {
+      addAnimationAction({
+        id: operationId,
+        type: 'update',
+        target: items.map(i => i.id).join(','),
+        duration: 350,
+        priority: 2,
+      });
+      
+      const result = await bulkUpdateTrigger(items);
+      toast.success(`${items.length} items updated successfully`);
+      return result.data[dataKey];
+    } catch (error) {
+      toast.error('Failed to update items');
+      throw error;
+    } finally {
+      setPendingOperations(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(operationId);
+        return newSet;
+      });
+    }
+  }, [bulkUpdateTrigger, dataKey, addAnimationAction]);
+  
+  const duplicate = useCallback(async (id: string) => {
+    const item = data?.data?.[dataKey]?.find((item: T) => item.id === id);
+    if (!item) {
+      throw new Error('Item not found');
+    }
+    
+    // Create a copy without the id
+    const { id: _, ...itemData } = item;
+    return create(itemData as CreateData);
+  }, [data, dataKey, create]);
+  
+  const exportData = useCallback(async (format: 'csv' | 'json' | 'pdf', selectedIds?: string[]) => {
+    const itemsToExport = selectedIds 
+      ? data?.data?.[dataKey]?.filter((item: T) => selectedIds.includes(item.id))
+      : data?.data?.[dataKey];
+    
+    if (!itemsToExport || itemsToExport.length === 0) {
+      toast.error('No data to export');
+      return;
+    }
+    
+    // Simple export implementation
+    if (format === 'json') {
+      const blob = new Blob([JSON.stringify(itemsToExport, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `export-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } else if (format === 'csv') {
+      // Basic CSV export
+      const headers = Object.keys(itemsToExport[0]).join(',');
+      const rows = itemsToExport.map((item: T) => Object.values(item).join(','));
+      const csv = [headers, ...rows].join('\n');
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `export-${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    
+    toast.success(`Exported ${itemsToExport.length} items as ${format.toUpperCase()}`);
+  }, [data, dataKey]);
   
   const refresh = useCallback(async () => {
     await swrMutate();
   }, [swrMutate]);
   
+  const isAnimating = animationQueue.length > 0 || pendingOperations.size > 0;
+  
   return {
-    data: data?.data?.categories,
+    data: data?.data?.[dataKey],
     pagination: data?.data?.pagination,
     loading: isLoading,
     error,
+    isAnimating,
+    animationQueue,
+    pendingOperations,
     create,
     update,
     delete: deleteItem,
-    bulkDelete,
+    bulkDelete: apiMethods.bulkDelete ? bulkDelete : undefined,
+    bulkUpdate: apiMethods.bulkUpdate ? bulkUpdate : undefined,
+    duplicate,
+    exportData,
     refresh,
     mutate: swrMutate,
+    clearAnimationQueue,
   };
 }
 
-// Products CRUD hook
+// Enhanced Categories CRUD hook
+export function useCategories(params?: PaginationParams & SearchParams & { parentId?: string }) {
+  return useEnhancedCRUD(
+    cacheKeys.categories,
+    {
+      list: apiClient.getCategories.bind(apiClient),
+      create: apiClient.createCategory.bind(apiClient),
+      update: apiClient.updateCategory.bind(apiClient),
+      delete: apiClient.deleteCategory.bind(apiClient),
+      bulkDelete: apiClient.bulkDeleteCategories?.bind(apiClient),
+    },
+    'categories',
+    params
+  );
+}
+
+// Enhanced Products CRUD hook
 export function useProducts(params?: PaginationParams & SearchParams & { 
   categoryId?: string; 
   minPrice?: number; 
   maxPrice?: number; 
 }) {
-  const cacheKey = cacheKeys.products(params);
-  
-  const { data, error, isLoading, mutate: swrMutate } = useSWR(
-    cacheKey,
-    () => apiClient.getProducts(params)
+  return useEnhancedCRUD(
+    cacheKeys.products,
+    {
+      list: apiClient.getProducts.bind(apiClient),
+      create: apiClient.createProduct.bind(apiClient),
+      update: apiClient.updateProduct.bind(apiClient),
+      delete: apiClient.deleteProduct.bind(apiClient),
+      bulkDelete: apiClient.bulkDeleteProducts?.bind(apiClient),
+    },
+    'products',
+    params
   );
-  
-  const { trigger: createTrigger } = useSWRMutation(
-    cacheKeys.products(),
-    (_, { arg }: { arg: any }) => apiClient.createProduct(arg)
-  );
-  
-  const { trigger: updateTrigger } = useSWRMutation(
-    cacheKey,
-    (_, { arg }: { arg: { id: string; data: any } }) => apiClient.updateProduct(arg.id, arg.data),
-    mutationOptions.optimisticUpdate(arg => ({ id: arg.id, ...arg.data }))
-  );
-  
-  const { trigger: deleteTrigger } = useSWRMutation(
-    cacheKey,
-    (_, { arg }: { arg: string }) => apiClient.deleteProduct(arg),
-    mutationOptions.optimisticDelete(arg)
-  );
-  
-  const { trigger: bulkDeleteTrigger } = useSWRMutation(
-    cacheKey,
-    (_, { arg }: { arg: string[] }) => apiClient.bulkDeleteProducts(arg)
-  );
-  
-  const create = useCallback(async (data: any) => {
-    const result = await createTrigger(data);
-    return result.data.product;
-  }, [createTrigger]);
-  
-  const update = useCallback(async (id: string, data: any) => {
-    const result = await updateTrigger({ id, data });
-    return result.data.product;
-  }, [updateTrigger]);
-  
-  const deleteItem = useCallback(async (id: string) => {
-    await deleteTrigger(id);
-  }, [deleteTrigger]);
-  
-  const bulkDelete = useCallback(async (ids: string[]) => {
-    await bulkDeleteTrigger(ids);
-  }, [bulkDeleteTrigger]);
-  
-  const refresh = useCallback(async () => {
-    await swrMutate();
-  }, [swrMutate]);
-  
-  return {
-    data: data?.data?.products,
-    pagination: data?.data?.pagination,
-    loading: isLoading,
-    error,
-    create,
-    update,
-    delete: deleteItem,
-    bulkDelete,
-    refresh,
-    mutate: swrMutate,
-  };
 }
 
-// Locations CRUD hook
+// Enhanced Locations CRUD hook
 export function useLocations(params?: PaginationParams & SearchParams & { 
   type?: string; 
   managerId?: string; 
 }) {
-  const cacheKey = cacheKeys.locations(params);
-  
-  const { data, error, isLoading, mutate: swrMutate } = useSWR(
-    cacheKey,
-    () => apiClient.getLocations(params)
+  return useEnhancedCRUD(
+    cacheKeys.locations,
+    {
+      list: apiClient.getLocations.bind(apiClient),
+      create: apiClient.createLocation.bind(apiClient),
+      update: apiClient.updateLocation.bind(apiClient),
+      delete: apiClient.deleteLocation.bind(apiClient),
+    },
+    'locations',
+    params
   );
-  
-  const { trigger: createTrigger } = useSWRMutation(
-    cacheKeys.locations(),
-    (_, { arg }: { arg: any }) => apiClient.createLocation(arg)
-  );
-  
-  const { trigger: updateTrigger } = useSWRMutation(
-    cacheKey,
-    (_, { arg }: { arg: { id: string; data: any } }) => apiClient.updateLocation(arg.id, arg.data),
-    mutationOptions.optimisticUpdate(arg => ({ id: arg.id, ...arg.data }))
-  );
-  
-  const { trigger: deleteTrigger } = useSWRMutation(
-    cacheKey,
-    (_, { arg }: { arg: string }) => apiClient.deleteLocation(arg),
-    mutationOptions.optimisticDelete(arg)
-  );
-  
-  const create = useCallback(async (data: any) => {
-    const result = await createTrigger(data);
-    return result.data.location;
-  }, [createTrigger]);
-  
-  const update = useCallback(async (id: string, data: any) => {
-    const result = await updateTrigger({ id, data });
-    return result.data.location;
-  }, [updateTrigger]);
-  
-  const deleteItem = useCallback(async (id: string) => {
-    await deleteTrigger(id);
-  }, [deleteTrigger]);
-  
-  const refresh = useCallback(async () => {
-    await swrMutate();
-  }, [swrMutate]);
-  
-  return {
-    data: data?.data?.locations,
-    pagination: data?.data?.pagination,
-    loading: isLoading,
-    error,
-    create,
-    update,
-    delete: deleteItem,
-    refresh,
-    mutate: swrMutate,
-  };
 }
 
-// Users CRUD hook
+// Enhanced Users CRUD hook
 export function useUsers(params?: PaginationParams & SearchParams & { 
   role?: string; 
   locationId?: string; 
 }) {
-  const cacheKey = cacheKeys.users(params);
-  
-  const { data, error, isLoading, mutate: swrMutate } = useSWR(
-    cacheKey,
-    () => apiClient.getUsers(params)
+  return useEnhancedCRUD(
+    cacheKeys.users,
+    {
+      list: apiClient.getUsers.bind(apiClient),
+      create: apiClient.createUser.bind(apiClient),
+      update: apiClient.updateUser.bind(apiClient),
+      delete: apiClient.deleteUser.bind(apiClient),
+    },
+    'users',
+    params
   );
-  
-  const { trigger: createTrigger } = useSWRMutation(
-    cacheKeys.users(),
-    (_, { arg }: { arg: any }) => apiClient.createUser(arg)
-  );
-  
-  const { trigger: updateTrigger } = useSWRMutation(
-    cacheKey,
-    (_, { arg }: { arg: { id: string; data: any } }) => apiClient.updateUser(arg.id, arg.data),
-    mutationOptions.optimisticUpdate(arg => ({ id: arg.id, ...arg.data }))
-  );
-  
-  const { trigger: deleteTrigger } = useSWRMutation(
-    cacheKey,
-    (_, { arg }: { arg: string }) => apiClient.deleteUser(arg),
-    mutationOptions.optimisticDelete(arg)
-  );
-  
-  const create = useCallback(async (data: any) => {
-    const result = await createTrigger(data);
-    return result.data.user;
-  }, [createTrigger]);
-  
-  const update = useCallback(async (id: string, data: any) => {
-    const result = await updateTrigger({ id, data });
-    return result.data.user;
-  }, [updateTrigger]);
-  
-  const deleteItem = useCallback(async (id: string) => {
-    await deleteTrigger(id);
-  }, [deleteTrigger]);
-  
-  const refresh = useCallback(async () => {
-    await swrMutate();
-  }, [swrMutate]);
-  
-  return {
-    data: data?.data?.users,
-    pagination: data?.data?.pagination,
-    loading: isLoading,
-    error,
-    create,
-    update,
-    delete: deleteItem,
-    refresh,
-    mutate: swrMutate,
-  };
 }
 
-// Inventory CRUD hook
+// Enhanced Inventory CRUD hook
 export function useInventory(params?: PaginationParams & SearchParams & { 
   productId?: string; 
   locationId?: string; 
   minQuantity?: number; 
   maxQuantity?: number; 
 }) {
-  const cacheKey = cacheKeys.inventory(params);
-  
-  const { data, error, isLoading, mutate: swrMutate } = useSWR(
-    cacheKey,
-    () => apiClient.getInventory(params)
+  return useEnhancedCRUD(
+    cacheKeys.inventory,
+    {
+      list: apiClient.getInventory.bind(apiClient),
+      create: apiClient.createInventoryItem.bind(apiClient),
+      update: apiClient.updateInventoryItem.bind(apiClient),
+      delete: apiClient.deleteInventoryItem.bind(apiClient),
+    },
+    'inventory',
+    params
   );
-  
-  const { trigger: createTrigger } = useSWRMutation(
-    cacheKeys.inventory(),
-    (_, { arg }: { arg: any }) => apiClient.createInventoryItem(arg)
-  );
-  
-  const { trigger: updateTrigger } = useSWRMutation(
-    cacheKey,
-    (_, { arg }: { arg: { id: string; data: any } }) => apiClient.updateInventoryItem(arg.id, arg.data),
-    mutationOptions.optimisticUpdate(arg => ({ id: arg.id, ...arg.data }))
-  );
-  
-  const { trigger: deleteTrigger } = useSWRMutation(
-    cacheKey,
-    (_, { arg }: { arg: string }) => apiClient.deleteInventoryItem(arg),
-    mutationOptions.optimisticDelete(arg)
-  );
-  
-  const create = useCallback(async (data: any) => {
-    const result = await createTrigger(data);
-    return result.data.inventory;
-  }, [createTrigger]);
-  
-  const update = useCallback(async (id: string, data: any) => {
-    const result = await updateTrigger({ id, data });
-    return result.data.inventory;
-  }, [updateTrigger]);
-  
-  const deleteItem = useCallback(async (id: string) => {
-    await deleteTrigger(id);
-  }, [deleteTrigger]);
-  
-  const refresh = useCallback(async () => {
-    await swrMutate();
-  }, [swrMutate]);
-  
-  return {
-    data: data?.data?.inventory,
-    pagination: data?.data?.pagination,
-    loading: isLoading,
-    error,
-    create,
-    update,
-    delete: deleteItem,
-    refresh,
-    mutate: swrMutate,
-  };
 }
 
 // Low stock items hook

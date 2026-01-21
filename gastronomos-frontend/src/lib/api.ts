@@ -495,6 +495,121 @@ export class ApiClient {
   async getAnalytics(type: 'receipts' | 'transfers' | 'allocations') {
     return this.request<any>(`/analytics/${type}`);
   }
+
+  // Suppliers
+  async getSuppliers(params?: PaginationParams & SearchParams) {
+    const queryString = params ? this.buildQueryString(params) : '';
+    return this.request<ApiResponse<{ suppliers: any[]; pagination?: any }>>(`/suppliers${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getSupplier(id: string) {
+    return this.request<ApiResponse<{ supplier: any }>>(`/suppliers/${id}`);
+  }
+
+  async createSupplier(data: any) {
+    return this.request<ApiResponse<{ supplier: any }>>('/suppliers', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateSupplier(id: string, data: any) {
+    return this.request<ApiResponse<{ supplier: any }>>(`/suppliers/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteSupplier(id: string) {
+    return this.request<ApiResponse<{ message: string }>>(`/suppliers/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Purchase Orders (Enhanced)
+  async getPurchaseOrder(id: string) {
+    return this.request<ApiResponse<{ purchaseOrder: any }>>(`/purchase-orders/${id}`);
+  }
+
+  async updatePurchaseOrder(id: string, data: any) {
+    return this.request<ApiResponse<{ purchaseOrder: any }>>(`/purchase-orders/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async approvePurchaseOrder(id: string) {
+    return this.request<ApiResponse<{ purchaseOrder: any }>>(`/purchase-orders/${id}/approve`, {
+      method: 'POST',
+    });
+  }
+
+  async addPOLineItem(poId: string, data: any) {
+    return this.request<ApiResponse<{ lineItem: any }>>(`/purchase-orders/${poId}/items`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Transfers (Enhanced)
+  async getTransfer(id: string) {
+    return this.request<ApiResponse<{ transfer: any }>>(`/transfers/${id}`);
+  }
+
+  async updateTransfer(id: string, data: any) {
+    return this.request<ApiResponse<{ transfer: any }>>(`/transfers/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async approveTransfer(id: string) {
+    return this.request<ApiResponse<{ transfer: any }>>(`/transfers/${id}/approve`, {
+      method: 'POST',
+    });
+  }
+
+  // Allocations (Enhanced)
+  async getAllocation(id: string) {
+    return this.request<ApiResponse<{ allocation: any }>>(`/allocations/${id}`);
+  }
+
+  async updateAllocation(id: string, data: any) {
+    return this.request<ApiResponse<{ allocation: any }>>(`/allocations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Receipt Processing
+  async uploadReceipt(file: File, options?: any) {
+    const formData = new FormData();
+    formData.append('receipt', file);
+    if (options) {
+      formData.append('options', JSON.stringify(options));
+    }
+
+    return this.request<ApiResponse<{ job: any }>>('/receipts/upload', {
+      method: 'POST',
+      body: formData,
+      headers: {}, // Let browser set Content-Type for FormData
+    });
+  }
+
+  async getReceiptJob(jobId: string) {
+    return this.request<ApiResponse<{ job: any }>>(`/receipts/jobs/${jobId}`);
+  }
+
+  async getReceipt(id: string) {
+    return this.request<ApiResponse<{ receipt: any }>>(`/receipts/${id}`);
+  }
+
+  async verifyReceipt(id: string, data: any) {
+    return this.request<ApiResponse<{ receipt: any }>>(`/receipts/${id}/verify`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

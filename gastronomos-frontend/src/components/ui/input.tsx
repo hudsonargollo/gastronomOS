@@ -1,10 +1,44 @@
 import * as React from "react"
+import { motion, MotionProps } from "framer-motion"
 
 import { cn } from "@/lib/utils"
+import { transitions } from "@/lib/animation-utils"
+
+const inputVariants = {
+  initial: { scale: 1 },
+  focus: { scale: 1.01 },
+  error: { 
+    x: [-2, 2, -2, 2, 0],
+    transition: { duration: 0.4 }
+  },
+}
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+  const [isFocused, setIsFocused] = React.useState(false)
+  const [hasError, setHasError] = React.useState(false)
+
+  React.useEffect(() => {
+    // Check for aria-invalid to trigger error animation
+    setHasError(props['aria-invalid'] === true || props['aria-invalid'] === 'true')
+  }, [props['aria-invalid']])
+
+  const motionProps: MotionProps = {
+    variants: inputVariants,
+    initial: "initial",
+    animate: hasError ? "error" : isFocused ? "focus" : "initial",
+    transition: transitions.fast,
+    onFocus: (e) => {
+      setIsFocused(true)
+      props.onFocus?.(e)
+    },
+    onBlur: (e) => {
+      setIsFocused(false)
+      props.onBlur?.(e)
+    },
+  }
+
   return (
-    <input
+    <motion.input
       type={type}
       data-slot="input"
       className={cn(
@@ -13,6 +47,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
         "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
         className
       )}
+      {...motionProps}
       {...props}
     />
   )

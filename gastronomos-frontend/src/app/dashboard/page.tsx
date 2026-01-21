@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MainLayout } from '@/components/layout/main-layout';
+import { DashboardPage as AnimatedDashboardPage } from '@/components/ui/animated-page';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { ActivityFeed } from '@/components/dashboard/activity-feed';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -114,7 +115,8 @@ export default function DashboardPage() {
 
   return (
     <MainLayout title={t('dashboard.title')}>
-      <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+      <AnimatedDashboardPage>
+        <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
         {/* Welcome Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -294,7 +296,8 @@ export default function DashboardPage() {
             </Card>
           </motion.div>
         </div>
-      </div>
+        </div>
+      </AnimatedDashboardPage>
     </MainLayout>
   );
 }

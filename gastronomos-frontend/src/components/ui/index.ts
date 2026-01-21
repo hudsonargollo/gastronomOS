@@ -33,4 +33,21 @@ export * from './responsive-layout'
 export * from './search-filter'
 export * from './sortable-tree'
 export * from './toast-provider'
+
+// Performance Components
 export * from './virtual-list'
+export * from './lazy-loading-provider'
+export * from './memory-manager'
+export * from './performance-monitor'
+
+// Animation Components
+export * from './animated-page'
+export * from './animated-list'
+export * from './animated-modal'
+export * from './loading-states'
+
+// Wizard Components
+export * from './wizard'
+export * from './wizard-step'
+export * from './wizard-navigation'
+export * from './progress-indicator'

@@ -1,13 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { GastronomyIcons } from '@/components/icons/gastronomy-icons';
-import { ArrowRight, MapPin, Clock, Package } from 'lucide-react';
+import { ArrowRight, MapPin, Clock, Package, Wand2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { InventoryTransferWizard } from '@/components/wizards/inventory-transfer-wizard';
+import { AnimatedModal, AnimatedModalContent, AnimatedModalHeader, AnimatedModalTitle } from '@/components/ui/animated-modal';
+import { toast } from 'sonner';
 
 const activeTransfers = [
   {
@@ -46,6 +49,19 @@ const activeTransfers = [
 ];
 
 export default function ActiveTransfersPage() {
+  const [showTransferWizard, setShowTransferWizard] = useState(false);
+
+  const handleTransferWizardComplete = (data: any) => {
+    console.log('Transfer wizard completed:', data);
+    setShowTransferWizard(false);
+    toast.success('Transfer created successfully!', {
+      description: `Transfer from ${data.sourceLocation?.name} to ${data.destinationLocation?.name} has been created.`,
+    });
+  };
+
+  const handleTransferWizardCancel = () => {
+    setShowTransferWizard(false);
+  };
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'preparing': return 'bg-yellow-100 text-yellow-700';
@@ -72,10 +88,19 @@ export default function ActiveTransfersPage() {
             <h1 className="text-2xl font-bold text-slate-900">Active Transfers</h1>
             <p className="text-slate-600">Monitor ongoing transfers between locations</p>
           </div>
-          <Button className="bg-gradient-to-r from-orange-500 to-red-600">
-            <GastronomyIcons.Truck className="h-4 w-4 mr-2" />
-            New Transfer
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => setShowTransferWizard(true)}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+            >
+              <Wand2 className="h-4 w-4 mr-2" />
+              Transfer Wizard
+            </Button>
+            <Button className="bg-gradient-to-r from-orange-500 to-red-600">
+              <GastronomyIcons.Truck className="h-4 w-4 mr-2" />
+              New Transfer
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -216,6 +241,20 @@ export default function ActiveTransfersPage() {
           ))}
         </div>
       </div>
+
+      {/* Transfer Wizard Modal */}
+      <AnimatedModal open={showTransferWizard} onOpenChange={setShowTransferWizard}>
+        <AnimatedModalContent size="xl" className="max-w-4xl">
+          <AnimatedModalHeader>
+            <AnimatedModalTitle>Create Inventory Transfer</AnimatedModalTitle>
+          </AnimatedModalHeader>
+          <InventoryTransferWizard
+            onComplete={handleTransferWizardComplete}
+            onCancel={handleTransferWizardCancel}
+            className="p-6"
+          />
+        </AnimatedModalContent>
+      </AnimatedModal>
     </MainLayout>
   );
 }
