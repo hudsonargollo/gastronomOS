@@ -18,6 +18,7 @@ export default function LoginPage() {
   const { t } = useTranslations();
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isDemoLoading, setIsDemoLoading] = React.useState(false);
   const [formData, setFormData] = React.useState({
     email: '',
     password: '',
@@ -39,12 +40,32 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoLogin = () => {
-    setFormData({
-      email: 'demo@gastronomos.com',
-      password: 'demo123',
-    });
-    toast.info(t('auth.demoCredentials'));
+  const handleDemoLogin = async () => {
+    setIsDemoLoading(true);
+    
+    try {
+      // Fetch demo credentials from backend
+      const response = await apiClient.getDemoCredentials();
+      
+      if (response.success && response.data.defaultAccount) {
+        const { email, password } = response.data.defaultAccount;
+        
+        // Populate form with demo credentials
+        setFormData({
+          email,
+          password,
+        });
+        
+        toast.info('Demo credentials loaded. Click "Sign In" to continue.');
+      } else {
+        throw new Error('Failed to load demo credentials');
+      }
+    } catch (error) {
+      console.error('Error loading demo credentials:', error);
+      toast.error('Unable to load demo credentials. Please try again.');
+    } finally {
+      setIsDemoLoading(false);
+    }
   };
 
   return (
@@ -166,11 +187,19 @@ export default function LoginPage() {
                   variant="outline"
                   className="w-full h-11 border-slate-200 hover:bg-slate-50 text-slate-700 font-medium"
                   onClick={handleDemoLogin}
+                  disabled={isDemoLoading || isLoading}
                 >
-                  <div className="flex items-center space-x-2">
-                    <Sparkles className="h-4 w-4 text-orange-500" />
-                    <span>{t('auth.tryDemo')}</span>
-                  </div>
+                  {isDemoLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                      <span>Loading demo...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <Sparkles className="h-4 w-4 text-orange-500" />
+                      <span>{t('auth.tryDemo')}</span>
+                    </div>
+                  )}
                 </Button>
               </form>
             </CardContent>

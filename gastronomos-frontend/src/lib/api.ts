@@ -115,6 +115,52 @@ export class ApiClient {
     return this.request<{ user: any }>('/auth/profile');
   }
 
+  // Demo endpoints
+  async getDemoCredentials() {
+    return this.request<ApiResponse<{
+      accounts: Array<{
+        role: string;
+        email: string;
+        password: string;
+        description: string;
+      }>;
+      defaultAccount: {
+        role: string;
+        email: string;
+        password: string;
+        description: string;
+      };
+      message: string;
+    }>>('/demo/credentials');
+  }
+
+  async getDemoStatus() {
+    return this.request<ApiResponse<{
+      demoDataReady: boolean;
+      message: string;
+      timestamp: string;
+    }>>('/demo/status');
+  }
+
+  async initializeDemoData() {
+    return this.request<ApiResponse<{
+      message: string;
+      timestamp: string;
+    }>>('/demo/initialize', {
+      method: 'POST',
+    });
+  }
+
+  async resetDemoData() {
+    return this.request<ApiResponse<{
+      message: string;
+      timestamp: string;
+      warning: string;
+    }>>('/demo/reset', {
+      method: 'POST',
+    });
+  }
+
   // Health check
   async healthCheck() {
     return this.request<{ status: string; timestamp: string; environment: string }>('/health');

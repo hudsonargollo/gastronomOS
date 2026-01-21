@@ -9,6 +9,7 @@ ENVIRONMENT = "development"
 LOG_LEVEL = "debug"
 CACHE_TTL = "300"
 JWT_EXPIRY = "86400"
+JWT_SECRET = "dev-secret-key-change-in-production-12345678901234567890"
 BCRYPT_ROUNDS = "10"
 
 # Development R2 bucket binding (disabled until R2 is enabled)
@@ -76,13 +77,13 @@ binding = "AI"
 [[env.development.d1_databases]]
 binding = "DB"
 database_name = "gastronomos-dev"
-database_id = "your-dev-database-id-here"
+database_id = "44291052-a433-4e15-a6c4-dc1af440c9ca"
 migrations_dir = "migrations"
 
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "gastronomos-staging"
-database_id = "your-staging-database-id-here"
+database_id = "253e34dc-9dfe-4a3b-8c2e-773f3294b15d"
 migrations_dir = "migrations"
 
 [[env.production.d1_databases]]
@@ -94,8 +95,8 @@ migrations_dir = "migrations"
 # Default D1 Database binding (fallback for local development)
 [[d1_databases]]
 binding = "DB"
-database_name = "gastronomos-db"
-database_id = "your-database-id-here"
+database_name = "gastronomos-dev"
+database_id = "44291052-a433-4e15-a6c4-dc1af440c9ca"
 migrations_dir = "migrations"
 
 # Worker limits and configuration (disabled for free plan)

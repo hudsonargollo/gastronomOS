@@ -43,6 +43,7 @@ import receiptAnalyticsRoutes from './routes/receipt-analytics';
 import allocationTransferIntegrationRoutes from './routes/allocation-transfer-integration';
 import transferOptimizationRoutes from './routes/transfer-optimization';
 import transferIntelligenceRoutes from './routes/transfer-intelligence';
+import demoRoutes from './routes/demo';
 import { handleReceiptProcessingQueue, type ReceiptProcessingJobMessage } from './services/receipt-processor';
 
 // Environment bindings interface
@@ -265,11 +266,52 @@ app.get('/health', async (c) => {
       });
     }
   } catch (error) {
-    console.error('Health check error:', error);
+    console.error('Health check endpoint:', error);
     return c.json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
       error: error instanceof Error ? error.message : 'Unknown error'
+    }, 500);
+  }
+});
+
+// Public demo credentials endpoint (no authentication required)
+app.get('/api/v1/demo/credentials', async (c) => {
+  try {
+    const demoAccounts = [
+      {
+        role: 'admin',
+        email: 'demo@gastronomos.com',
+        password: 'demo123',
+        description: 'Full system access with all permissions'
+      },
+      {
+        role: 'manager',
+        email: 'manager@demo-restaurant.com',
+        password: 'manager123',
+        description: 'Location manager with inventory and purchasing access'
+      },
+      {
+        role: 'staff',
+        email: 'staff@demo-restaurant.com',
+        password: 'staff123',
+        description: 'Basic staff access for inventory viewing'
+      }
+    ];
+
+    return c.json({
+      success: true,
+      data: {
+        accounts: demoAccounts,
+        defaultAccount: demoAccounts[0],
+        message: 'Demo credentials retrieved successfully'
+      }
+    }, 200);
+  } catch (error) {
+    console.error('Error retrieving demo credentials:', error);
+    return c.json({
+      error: 'Demo Credentials Error',
+      message: 'Unable to retrieve demo credentials'
     }, 500);
   }
 });
@@ -295,6 +337,20 @@ app.get('/api/status', async (c) => {
   };
   
   return c.json(stats);
+});
+
+// Demo test endpoint
+app.get('/api/v1/demo-test', async (c) => {
+  return c.json({
+    message: 'Demo test endpoint working',
+    timestamp: new Date().toISOString(),
+    demo: {
+      credentials: {
+        email: 'demo@gastronomos.com',
+        password: 'demo123'
+      }
+    }
+  });
 });
 
 // API routes placeholder
@@ -358,6 +414,7 @@ app.route('/api/v1/analytics', receiptAnalyticsRoutes);
 app.route('/api/v1', priceHistoryRoutes);
 app.route('/api/v1', auditRoutes);
 app.route('/api/v1', productRoutes);
+app.route('/api/v1/demo', demoRoutes);
 
 // 404 handler for unmatched routes
 app.use('*', notFoundHandler());
