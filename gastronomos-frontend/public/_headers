@@ -1,0 +1,14 @@
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/_next/static/chunks/*.js
+  Content-Type: application/javascript; charset=utf-8
+
+/_next/static/chunks/*.css
+  Content-Type: text/css; charset=utf-8
+
+/*.js
+  Content-Type: application/javascript; charset=utf-8
+
+/*.css
+  Content-Type: text/css; charset=utf-8
