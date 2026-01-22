@@ -113,6 +113,10 @@ migrations_dir = "migrations"
 [ai]
 binding = "AI"
 
+# Cron triggers for scheduled tasks
+[triggers]
+crons = ["0 2 * * *"]  # Reset demo data daily at 2 AM UTC
+
 # Queue bindings for receipt processing (disabled until queues are set up)
 # [[queues.producers]]
 # queue = "receipt-processing-queue"

@@ -486,3 +486,36 @@ export async function queue(
 
 // Export the receipt processing queue handler for direct use
 export { handleReceiptProcessingQueue };
+
+// Export scheduled event handler for Cloudflare Cron Triggers
+export async function scheduled(
+  event: ScheduledEvent,
+  env: Env,
+  ctx: ExecutionContext
+): Promise<void> {
+  try {
+    console.log('Scheduled event triggered:', {
+      cron: event.cron,
+      scheduledTime: new Date(event.scheduledTime).toISOString()
+    });
+
+    // Validate required environment bindings
+    if (!env.DB) {
+      console.error('Scheduled event failed: DB binding not available');
+      return;
+    }
+
+    // Import and execute demo reset handler
+    const { handleDemoResetCron } = await import('./cron/demo-reset');
+    await handleDemoResetCron(event, { DB: env.DB });
+
+    console.log('Scheduled event completed successfully');
+  } catch (error) {
+    console.error('Scheduled event error:', error);
+    console.error('Event details:', {
+      cron: event.cron,
+      scheduledTime: new Date(event.scheduledTime).toISOString(),
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+}
