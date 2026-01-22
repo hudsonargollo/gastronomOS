@@ -202,7 +202,8 @@ demo.post('/reset', async (c) => {
     return c.json(createSuccessResponse({
       message: 'Demo data reset completed successfully',
       timestamp: new Date().toISOString(),
-      warning: 'All previous demo data has been replaced with fresh sample data'
+      warning: 'All previous demo data has been replaced with fresh sample data',
+      nextAutoReset: 'Demo data will automatically reset daily at 2 AM UTC'
     }), 200);
     
   } catch (error) {
@@ -211,6 +212,44 @@ demo.post('/reset', async (c) => {
       'Demo Reset Failed',
       error.message || 'Unable to reset demo data',
       'DEMO_RESET_ERROR'
+    ), 500);
+  }
+});
+
+/**
+ * GET /demo/session-config
+ * 
+ * Get demo session configuration and security restrictions
+ * Returns information about demo session expiration and security measures
+ * 
+ * Requirements: 8.5 - Add demo account security measures
+ */
+demo.get('/session-config', async (c) => {
+  try {
+    const db = drizzle(c.env.DB, { schema });
+    const { createDemoSessionManager } = await import('../services/demo-session-manager');
+    const demoSessionManager = createDemoSessionManager(db as any);
+    
+    const config = demoSessionManager.getConfig();
+    const restrictions = demoSessionManager.getSessionSecurityRestrictions();
+    
+    return c.json(createSuccessResponse({
+      sessionConfig: {
+        expirationHours: config.expirationSeconds / 3600,
+        resetIntervalHours: config.resetIntervalHours,
+        maxConcurrentSessions: config.maxConcurrentSessions,
+        autoResetEnabled: config.enableAutoReset
+      },
+      securityRestrictions: restrictions,
+      message: 'Demo session configuration retrieved successfully'
+    }), 200);
+    
+  } catch (error) {
+    console.error('Error retrieving demo session config:', error);
+    return c.json(createErrorResponse(
+      'Config Retrieval Error',
+      'Unable to retrieve demo session configuration',
+      'DEMO_CONFIG_ERROR'
     ), 500);
   }
 });

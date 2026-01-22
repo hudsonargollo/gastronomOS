@@ -15,7 +15,7 @@ interface JWTHeader {
 
 // JWT Service interface as defined in the design document
 export interface IJWTService {
-  sign(claims: Omit<JWTClaims, 'exp' | 'iat'>): Promise<string>;
+  sign(claims: Omit<JWTClaims, 'exp' | 'iat'>, customExpirationSeconds?: number): Promise<string>;
   verify(token: string): Promise<ExtendedJWTClaims>;
   decode(token: string): ExtendedJWTClaims | null;
 }
@@ -80,15 +80,21 @@ export class JWTService implements IJWTService {
 
   /**
    * Sign JWT claims and return a complete JWT token
+   * Supports custom expiration time for demo sessions
    */
-  async sign(claims: Omit<JWTClaims, 'exp' | 'iat'>): Promise<string> {
+  async sign(claims: Omit<JWTClaims, 'exp' | 'iat'>, customExpirationSeconds?: number): Promise<string> {
     const now = Math.floor(Date.now() / 1000);
+    
+    // Use custom expiration if provided (for demo sessions), otherwise use default
+    const expirationTime = customExpirationSeconds !== undefined 
+      ? customExpirationSeconds 
+      : CONFIG.JWT.EXPIRES_IN;
     
     // Create complete claims with timestamps and issuer
     const fullClaims: ExtendedJWTClaims = {
       ...claims,
       iat: now,
-      exp: now + CONFIG.JWT.EXPIRES_IN,
+      exp: now + expirationTime,
       iss: CONFIG.JWT.ISSUER,
     };
 
