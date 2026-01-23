@@ -40,7 +40,7 @@ export interface UpdateLocationInput {
 export function useLocations() {
   const { data, error, isLoading, mutate } = useSWR<Location[]>(
     '/locations',
-    async (url) => {
+    async (url: string) => {
       const response = await apiClient.get(url);
       return response.data.data;
     }
@@ -98,7 +98,7 @@ export function useLocations() {
 export function useLocation(id: string | null) {
   const { data, error, isLoading, mutate } = useSWR<Location>(
     id ? `/locations/${id}` : null,
-    async (url) => {
+    async (url: string) => {
       const response = await apiClient.get(url);
       return response.data.data;
     }

@@ -43,7 +43,7 @@ export interface UpdateUserInput {
 export function useUsers() {
   const { data, error, isLoading, mutate } = useSWR<User[]>(
     '/users',
-    async (url) => {
+    async (url: string) => {
       const response = await apiClient.get(url);
       return response.data.data;
     }
@@ -101,7 +101,7 @@ export function useUsers() {
 export function useUser(id: string | null) {
   const { data, error, isLoading, mutate } = useSWR<User>(
     id ? `/users/${id}` : null,
-    async (url) => {
+    async (url: string) => {
       const response = await apiClient.get(url);
       return response.data.data;
     }

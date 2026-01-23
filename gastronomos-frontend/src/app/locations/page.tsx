@@ -178,7 +178,7 @@ export default function LocationsPage() {
                          location.type === 'COMMISSARY' ? t('locations.commissary') :
                          location.type === 'POP_UP' ? t('locations.popUp') :
                          location.type === 'WAREHOUSE' ? t('locations.warehouse') :
-                         location.type.replace('_', ' ')}
+                         location.type}
                       </Badge>
                     </div>
                     
@@ -210,7 +210,7 @@ export default function LocationsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>{t('pages.locations.deleteConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('pages.locations.deleteConfirmDescription', { name: locationToDelete?.name })}
+              {t('pages.locations.deleteConfirmDescription').replace('{name}', locationToDelete?.name || '')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -228,9 +228,7 @@ export default function UsersPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>{t('pages.users.deleteConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('pages.users.deleteConfirmDescription', { 
-                name: userToDelete ? `${userToDelete.firstName} ${userToDelete.lastName}` : '' 
-              })}
+              {t('pages.users.deleteConfirmDescription').replace('{name}', userToDelete ? `${userToDelete.firstName} ${userToDelete.lastName}` : '')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
