@@ -17,12 +17,12 @@
 
 ### ✅ Frontend Deployment (Cloudflare Pages)
 **Status**: Successfully Deployed  
-**URL**: https://287a84f4.gastronomos-frontend.pages.dev  
+**URL**: https://5f738bd1.gastronomos-frontend.pages.dev  
 **Framework**: Next.js 16.1.3 (Turbopack)  
-**Build Time**: ~7 seconds  
-**Pages**: 20 static pages generated  
-**Files Uploaded**: 243 files  
-**Upload Time**: 3.46 seconds  
+**Build Time**: ~6.4 seconds  
+**Pages**: 26 static pages generated  
+**Files Uploaded**: 206 files  
+**Upload Time**: 3.17 seconds  
 
 ### ✅ GitHub Repository
 **Status**: All changes pushed  
@@ -93,7 +93,7 @@
 
 ### Production
 - **Backend API**: https://gastronomos.hudsonargollo2.workers.dev/api/v1
-- **Frontend**: https://287a84f4.gastronomos-frontend.pages.dev
+- **Frontend**: https://5f738bd1.gastronomos-frontend.pages.dev
 - **GitHub**: https://github.com/hudsonargollo/gastronomOS
 
 ### Demo Credentials
