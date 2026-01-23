@@ -167,6 +167,7 @@
     "restaurant": "Restaurante",
     "commissary": "Comissária",
     "popUp": "Pop-up",
+    "warehouse": "Armazém",
     "staff": "funcionários",
     "inventory": "estoque",
     "manager": "Gerente"
@@ -410,20 +411,43 @@
       "title": "Usuários",
       "subtitle": "Gerencie contas de usuário e permissões",
       "addUser": "Adicionar Usuário",
+      "editUser": "Editar Usuário",
+      "addUserDescription": "Criar uma nova conta de usuário com função e atribuição de local",
+      "editUserDescription": "Atualizar informações do usuário, função e atribuição de local",
       "lastLogin": "Último login",
       "role": "Função",
       "hoursAgo": "horas atrás",
       "minutesAgo": "minutos atrás",
-      "daysAgo": "dias atrás"
+      "daysAgo": "dias atrás",
+      "never": "Nunca",
+      "noUsers": "Nenhum usuário encontrado",
+      "noUsersDescription": "Comece criando sua primeira conta de usuário",
+      "deleteConfirmTitle": "Excluir Usuário",
+      "deleteConfirmDescription": "Tem certeza de que deseja excluir {name}? Esta ação não pode ser desfeita."
     },
     "locations": {
       "title": "Locais",
       "subtitle": "Gerencie os locais e instalações do seu restaurante",
       "addLocation": "Adicionar Local",
+      "editLocation": "Editar Local",
+      "addLocationDescription": "Criar um novo local para sua organização de restaurante",
+      "editLocationDescription": "Atualizar informações e configurações do local",
       "type": "Tipo",
       "manager": "Gerente",
       "staff": "Funcionários",
-      "items": "Itens"
+      "items": "Itens",
+      "noLocations": "Nenhum local encontrado",
+      "noLocationsDescription": "Comece criando seu primeiro local",
+      "deleteConfirmTitle": "Excluir Local",
+      "deleteConfirmDescription": "Tem certeza de que deseja excluir {name}? Esta ação não pode ser desfeita.",
+      "form": {
+        "name": "Nome do Local",
+        "namePlaceholder": "Digite o nome do local",
+        "type": "Tipo de Local",
+        "typePlaceholder": "Selecione o tipo de local",
+        "address": "Endereço",
+        "addressPlaceholder": "Digite o endereço completo"
+      }
     },
     "inventory": {
       "stockLevels": {

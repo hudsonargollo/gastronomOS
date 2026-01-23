@@ -167,6 +167,7 @@
     "restaurant": "Restaurant",
     "commissary": "Commissary",
     "popUp": "Pop-up",
+    "warehouse": "Warehouse",
     "staff": "staff",
     "inventory": "inventory",
     "manager": "Manager"
@@ -410,20 +411,43 @@
       "title": "Users",
       "subtitle": "Manage user accounts and permissions",
       "addUser": "Add User",
+      "editUser": "Edit User",
+      "addUserDescription": "Create a new user account with role and location assignment",
+      "editUserDescription": "Update user information, role, and location assignment",
       "lastLogin": "Last login",
       "role": "Role",
       "hoursAgo": "hours ago",
       "minutesAgo": "minutes ago",
-      "daysAgo": "days ago"
+      "daysAgo": "days ago",
+      "never": "Never",
+      "noUsers": "No users found",
+      "noUsersDescription": "Get started by creating your first user account",
+      "deleteConfirmTitle": "Delete User",
+      "deleteConfirmDescription": "Are you sure you want to delete {name}? This action cannot be undone."
     },
     "locations": {
       "title": "Locations",
       "subtitle": "Manage your restaurant locations and facilities",
       "addLocation": "Add Location",
+      "editLocation": "Edit Location",
+      "addLocationDescription": "Create a new location for your restaurant organization",
+      "editLocationDescription": "Update location information and settings",
       "type": "Type",
       "manager": "Manager",
       "staff": "Staff",
-      "items": "Items"
+      "items": "Items",
+      "noLocations": "No locations found",
+      "noLocationsDescription": "Get started by creating your first location",
+      "deleteConfirmTitle": "Delete Location",
+      "deleteConfirmDescription": "Are you sure you want to delete {name}? This action cannot be undone.",
+      "form": {
+        "name": "Location Name",
+        "namePlaceholder": "Enter location name",
+        "type": "Location Type",
+        "typePlaceholder": "Select location type",
+        "address": "Address",
+        "addressPlaceholder": "Enter full address"
+      }
     },
     "inventory": {
       "stockLevels": {
