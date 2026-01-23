@@ -3,10 +3,10 @@
 ## Production Deployment
 
 ### 🎯 **Main Application**
-**Frontend**: https://5f738bd1.gastronomos-frontend.pages.dev
+**Frontend**: https://d19cd998.gastronomos-frontend.pages.dev
 
 ### 🔧 **Backend API**
-**API Base URL**: https://gastronomos.hudsonargollo2.workers.dev/api/v1
+**API Base URL**: https://gastronomos-production.hudsonargollo2.workers.dev/api/v1
 
 ### 📦 **GitHub Repository**
 **Source Code**: https://github.com/hudsonargollo/gastronomOS
@@ -55,7 +55,7 @@ npm run deploy
 
 - **Backend**: ✅ Live on Cloudflare Workers
 - **Frontend**: ✅ Live on Cloudflare Pages
-- **Database**: ✅ D1 (gastronomos-dev)
+- **Database**: ✅ D1 (gastronomos-prod)
 - **GitHub**: ✅ All changes pushed
 
 ---
@@ -75,5 +75,5 @@ npm run deploy
 
 ---
 
-**Last Updated**: January 22, 2025  
+**Last Updated**: January 23, 2026  
 **Status**: 🟢 All Systems Operational
