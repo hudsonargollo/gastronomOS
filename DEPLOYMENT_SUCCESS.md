@@ -15,25 +15,19 @@
 
 **Schedule**: Daily at 2:00 AM (for demo data reset)
 
-### ✅ Frontend Build
-**Status**: Build Successful  
+### ✅ Frontend Deployment (Cloudflare Pages)
+**Status**: Successfully Deployed  
+**URL**: https://287a84f4.gastronomos-frontend.pages.dev  
 **Framework**: Next.js 16.1.3 (Turbopack)  
 **Build Time**: ~7 seconds  
 **Pages**: 20 static pages generated  
-
-**Note**: Frontend was previously deployed to Vercel at:
-- https://gastronomos-frontend-hudsonargollo2s-projects.vercel.app
-
-To redeploy frontend, run:
-```bash
-cd gastronomos-frontend
-npx vercel --prod
-```
+**Files Uploaded**: 243 files  
+**Upload Time**: 3.46 seconds  
 
 ### ✅ GitHub Repository
 **Status**: All changes pushed  
 **Repository**: https://github.com/hudsonargollo/gastronomOS  
-**Latest Commit**: 160483c - "fix: resolve build errors and add api-client"
+**Latest Commit**: 38a079b - "docs: add deployment success documentation"
 
 ## 🎯 What Was Deployed
 
@@ -99,7 +93,7 @@ npx vercel --prod
 
 ### Production
 - **Backend API**: https://gastronomos.hudsonargollo2.workers.dev/api/v1
-- **Frontend**: https://gastronomos-frontend-hudsonargollo2s-projects.vercel.app
+- **Frontend**: https://287a84f4.gastronomos-frontend.pages.dev
 - **GitHub**: https://github.com/hudsonargollo/gastronomOS
 
 ### Demo Credentials
@@ -119,11 +113,11 @@ Password: staff123
 
 ## 📝 Next Steps
 
-### To Redeploy Frontend to Vercel:
+### To Redeploy Frontend to Cloudflare Pages:
 ```bash
 cd gastronomos-frontend
-npx vercel login  # If not already logged in
-npx vercel --prod
+npm run build
+npx wrangler pages deploy out --project-name=gastronomos-frontend
 ```
 
 ### To Deploy Backend Updates:
