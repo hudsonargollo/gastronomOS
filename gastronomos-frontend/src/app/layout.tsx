@@ -4,6 +4,7 @@ import { LanguageProvider } from "@/contexts/language-context";
 import { AnimationProvider } from "@/contexts/animation-context";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { DevPerformanceMonitor } from "@/components/ui/performance-monitor";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -30,6 +31,7 @@ export default function RootLayout({
           <AnimationProvider>
             <LanguageProvider>
               {children}
+              <Toaster position="top-right" richColors />
               <DevPerformanceMonitor />
             </LanguageProvider>
           </AnimationProvider>
