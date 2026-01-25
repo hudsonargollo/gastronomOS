@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
 
 export type UserRole = 'ADMIN' | 'MANAGER' | 'STAFF';
@@ -41,22 +41,22 @@ export interface UpdateUserInput {
 }
 
 export function useUsers() {
-  const { data, error, isLoading, mutate } = useSWR<User[]>(
+  const { data, error, isLoading, mutate} = useSWR<User[]>(
     '/users',
-    async (url: string) => {
-      const response = await apiClient.get(url);
-      return response.data.data;
+    async () => {
+      const response = await apiClient.getUsers();
+      return response.data.users;
     }
   );
 
   const createUser = async (input: CreateUserInput) => {
     try {
-      const response = await apiClient.post('/users', input);
+      const response = await apiClient.createUser(input);
       await mutate();
       toast.success('User created successfully');
-      return response.data.data;
+      return response.data.user;
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Failed to create user';
+      const message = error.message || 'Failed to create user';
       toast.error(message);
       throw error;
     }
@@ -64,12 +64,12 @@ export function useUsers() {
 
   const updateUser = async (id: string, input: UpdateUserInput) => {
     try {
-      const response = await apiClient.put(`/users/${id}`, input);
+      const response = await apiClient.updateUser(id, input);
       await mutate();
       toast.success('User updated successfully');
-      return response.data.data;
+      return response.data.user;
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Failed to update user';
+      const message = error.message || 'Failed to update user';
       toast.error(message);
       throw error;
     }
@@ -77,11 +77,11 @@ export function useUsers() {
 
   const deleteUser = async (id: string) => {
     try {
-      await apiClient.delete(`/users/${id}`);
+      await apiClient.deleteUser(id);
       await mutate();
       toast.success('User deleted successfully');
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Failed to delete user';
+      const message = error.message || 'Failed to delete user';
       toast.error(message);
       throw error;
     }
@@ -101,9 +101,10 @@ export function useUsers() {
 export function useUser(id: string | null) {
   const { data, error, isLoading, mutate } = useSWR<User>(
     id ? `/users/${id}` : null,
-    async (url: string) => {
-      const response = await apiClient.get(url);
-      return response.data.data;
+    async () => {
+      if (!id) return null;
+      const response = await apiClient.getUser(id);
+      return response.data.user;
     }
   );
 

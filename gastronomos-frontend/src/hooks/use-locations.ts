@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
 
 export interface Location {
@@ -40,20 +40,20 @@ export interface UpdateLocationInput {
 export function useLocations() {
   const { data, error, isLoading, mutate } = useSWR<Location[]>(
     '/locations',
-    async (url: string) => {
-      const response = await apiClient.get(url);
-      return response.data.data;
+    async () => {
+      const response = await apiClient.getLocations();
+      return response.data.locations;
     }
   );
 
   const createLocation = async (input: CreateLocationInput) => {
     try {
-      const response = await apiClient.post('/locations', input);
+      const response = await apiClient.createLocation(input);
       await mutate();
       toast.success('Location created successfully');
-      return response.data.data;
+      return response.data.location;
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Failed to create location';
+      const message = error.message || 'Failed to create location';
       toast.error(message);
       throw error;
     }
@@ -61,12 +61,12 @@ export function useLocations() {
 
   const updateLocation = async (id: string, input: UpdateLocationInput) => {
     try {
-      const response = await apiClient.put(`/locations/${id}`, input);
+      const response = await apiClient.updateLocation(id, input);
       await mutate();
       toast.success('Location updated successfully');
-      return response.data.data;
+      return response.data.location;
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Failed to update location';
+      const message = error.message || 'Failed to update location';
       toast.error(message);
       throw error;
     }
@@ -74,11 +74,11 @@ export function useLocations() {
 
   const deleteLocation = async (id: string) => {
     try {
-      await apiClient.delete(`/locations/${id}`);
+      await apiClient.deleteLocation(id);
       await mutate();
       toast.success('Location deleted successfully');
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Failed to delete location';
+      const message = error.message || 'Failed to delete location';
       toast.error(message);
       throw error;
     }
@@ -98,9 +98,10 @@ export function useLocations() {
 export function useLocation(id: string | null) {
   const { data, error, isLoading, mutate } = useSWR<Location>(
     id ? `/locations/${id}` : null,
-    async (url: string) => {
-      const response = await apiClient.get(url);
-      return response.data.data;
+    async () => {
+      if (!id) return null;
+      const response = await apiClient.getLocation(id);
+      return response.data.location;
     }
   );
 
