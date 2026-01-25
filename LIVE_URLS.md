@@ -3,11 +3,12 @@
 ## Production Deployment
 
 ### 🎯 **Main Application**
-**Frontend**: https://ee4f6634.gastronomos-frontend.pages.dev
+**Frontend**: https://d351df47.gastronomos-frontend.pages.dev
 **Status**: ✅ Live - CSS and Login Working
 
 ### 🔧 **Backend API**
-**API Base URL**: https://gastronomos-production.hudsonargollo2.workers.dev/api/v1
+**API Base URL**: https://api.gastronomos.clubemkt.digital/api/v1
+**Worker URL**: https://gastronomos-production.hudsonargollo2.workers.dev/api/v1
 
 ### 📦 **GitHub Repository**
 **Source Code**: https://github.com/hudsonargollo/gastronomOS
@@ -76,5 +77,5 @@ npm run deploy
 
 ---
 
-**Last Updated**: January 24, 2026  
-**Status**: 🟢 All Systems Operational - CSS Headers Fixed & Verified
+**Last Updated**: January 25, 2026  
+**Status**: 🟢 All Systems Operational - Latest Deployment
