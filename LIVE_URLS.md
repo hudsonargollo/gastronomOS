@@ -3,8 +3,8 @@
 ## Production Deployment
 
 ### 🎯 **Main Application**
-**Frontend**: https://50c629d3.gastronomos-frontend.pages.dev
-**Status**: ✅ Live - CSS Config Fixed
+**Frontend**: https://803d2c4a.gastronomos-frontend.pages.dev
+**Status**: ✅ Live - Headers Fixed for CSS
 
 ### 🔧 **Backend API**
 **API Base URL**: https://api.gastronomos.clubemkt.digital/api/v1
