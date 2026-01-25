@@ -1,3 +1,13 @@
+# CSS files
+/_next/static/chunks/*.css
+  Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
+
+# JavaScript files
+/_next/static/chunks/*.js
+  Content-Type: application/javascript; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
+
 # Security headers for Cloudflare Pages
 /*
   X-Frame-Options: DENY
