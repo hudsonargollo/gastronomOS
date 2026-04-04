@@ -1,15 +1,36 @@
-# GastronomOS Authentication & Authorization
+# GastronomOS - Restaurant Management System
 
-Multi-tenant authentication and authorization system for GastronomOS, built on Cloudflare Workers.
+Complete multi-tenant restaurant management system with inventory, purchasing, transfers, and allocation management. Built on Cloudflare Workers for global edge performance.
 
-## Features
+## 🚀 Live System
 
+- **Backend API**: https://api.gastronomos.clubemkt.digital
+- **Frontend**: https://gastronomos-frontend.pages.dev
+- **Status**: ✅ Production (Last deployed: Jan 25, 2026)
+
+## ✨ Key Features
+
+### Core Systems
 - **Multi-tenant architecture** with strict data isolation
 - **Role-based access control** (ADMIN, MANAGER, STAFF)
 - **Location-based access scoping** for multi-location restaurants
 - **JWT-based authentication** using Web Crypto API
-- **Comprehensive audit logging** for security events
+- **Comprehensive audit logging** for all operations
+
+### Business Features
+- **Inventory Management** - Product catalog, categories, stock tracking
+- **Purchasing System** - PO management, supplier management, receipt processing with AI OCR
+- **Transfer System** - Inter-location transfers with emergency workflows
+- **Allocation System** - Inventory allocation with optimization
+- **Analytics & Reporting** - Real-time dashboards and custom reports
+
+### Technical Features
 - **Edge-deployed** on Cloudflare Workers for global performance
+- **AI-powered** receipt processing and transfer intelligence
+- **API versioning** with backward compatibility
+- **Advanced caching** and rate limiting
+- **Webhook system** for integrations
+- **Comprehensive monitoring** and health checks
 
 ## Quick Start
 
@@ -62,18 +83,42 @@ Set these secrets using `wrangler secret put`:
 - `JWT_SECRET` - Secret key for JWT signing
 - `BCRYPT_ROUNDS` - Number of bcrypt rounds (optional, defaults to 12)
 
-## API Documentation
+## 📚 Documentation
 
-### Authentication Endpoints
+- **[PROJECT_STATUS.md](./PROJECT_STATUS.md)** - Complete feature list and deployment status
+- **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** - Project organization and directory structure
+- **[CLEANUP_SUMMARY.md](./CLEANUP_SUMMARY.md)** - Recent cleanup and organization summary
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Deployment guide for all environments
+- **[DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md)** - Production deployment checklist
 
-- `POST /api/v1/auth/register` - Register new user
-- `POST /api/v1/auth/login` - User login
-- `GET /api/v1/auth/me` - Get current user info
+## 🔌 API Overview
 
-### Tenant Management
+### Authentication
+- POST /api/v1/auth/register - Register new user
+- POST /api/v1/auth/login - User login
+- GET /api/v1/auth/me - Get current user info
 
-- `POST /api/v1/tenants` - Create new tenant (admin only)
-- `GET /api/v1/tenants/:id` - Get tenant info
+### Core Resources
+- /api/v1/tenants - Tenant management
+- /api/v1/users - User management
+- /api/v1/locations - Location management
+- /api/v1/categories - Category management
+- /api/v1/products - Product catalog
+- /api/v1/inventory - Inventory tracking
+
+### Purchasing
+- /api/v1/suppliers - Supplier management
+- /api/v1/purchase-orders - PO management
+- /api/v1/receipts - Receipt processing
+- /api/v1/purchasing-analytics - Analytics
+
+### Transfers & Allocations
+- /api/v1/transfers - Transfer management
+- /api/v1/emergency-transfers - Emergency workflows
+- /api/v1/allocations - Allocation management
+- /api/v1/allocation-optimizer - AI optimization
+
+See [PROJECT_STATUS.md](./PROJECT_STATUS.md) for complete API documentation.
 
 ## Architecture
 

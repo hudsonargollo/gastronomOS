@@ -1,0 +1,73 @@
+# Docker Compose for GastronomOS Local Development
+# Note: Production deploys to Cloudflare Workers with D1 database
+
+version: '3.8'
+
+services:
+  # Backend API (Cloudflare Workers local simulator)
+  api:
+    build:
+      context: .
+      target: development
+    ports:
+      - "8787:8787"
+    environment:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=debug
+      - JWT_SECRET=dev-jwt-secret-not-for-production-use-minimum-64-chars-required-for-security
+      - BCRYPT_ROUNDS=10
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - redis
+    networks:
+      - gastronomos-network
+
+  # Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - gastronomos-network
+
+  # Redis Commander (Redis GUI)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - gastronomos-network
+
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./gastronomos-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8787
+      - NODE_ENV=development
+    volumes:
+      - ./gastronomos-frontend:/app
+      - /app/node_modules
+    depends_on:
+      - api
+    networks:
+      - gastronomos-network
+
+networks:
+  gastronomos-network:
+    driver: bridge
+
+volumes:
+  redis-data:

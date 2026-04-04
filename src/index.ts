@@ -15,13 +15,16 @@ import { ComprehensiveAuditService } from './services/comprehensive-audit';
 import categoryRoutes from './routes/categories';
 import inventoryRoutes from './routes/inventory';
 import authRoutes from './routes/auth';
+import bootstrapRoutes from './routes/bootstrap';
 import tenantRoutes from './routes/tenants';
 import userRoutes from './routes/users';
 import locationRoutes from './routes/locations';
 import supplierRoutes from './routes/suppliers';
 import purchaseOrderRoutes from './routes/purchase-orders';
+import ordersRoutes from './routes/orders';
 import priceHistoryRoutes from './routes/price-history';
 import auditRoutes from './routes/audit';
+import comprehensiveAuditRoutes from './routes/comprehensive-audit';
 import productRoutes from './routes/products';
 import purchasingAnalyticsRoutes from './routes/purchasing-analytics';
 import receiptRoutes from './routes/receipts';
@@ -43,7 +46,16 @@ import receiptAnalyticsRoutes from './routes/receipt-analytics';
 import allocationTransferIntegrationRoutes from './routes/allocation-transfer-integration';
 import transferOptimizationRoutes from './routes/transfer-optimization';
 import transferIntelligenceRoutes from './routes/transfer-intelligence';
+import paymentsRoutes from './routes/payments';
+import commissionReportsRoutes from './routes/commission-reports';
+import kitchenRoutes from './routes/kitchen';
+import websocketRoutes from './routes/websocket';
+import menuRoutes from './routes/menu';
+import apiDocsRoutes from './routes/api-docs';
 import { handleReceiptProcessingQueue, type ReceiptProcessingJobMessage } from './services/receipt-processor';
+
+// Export Durable Object for WebSocket
+export { WebSocketDurableObject } from './services/websocket-durable-object';
 
 // Environment bindings interface
 export interface Env extends Record<string, unknown> {
@@ -56,6 +68,7 @@ export interface Env extends Record<string, unknown> {
   AI?: Ai;
   REDIS_URL?: string;
   WEBHOOK_SECRET?: string;
+  WEBSOCKET_DO?: DurableObjectNamespace;
 }
 
 // Extend Hono context with services
@@ -177,21 +190,11 @@ app.use('/api/*', async (c, next) => {
 // Middleware
 app.use('*', logger());
 app.use('*', cors({
-  origin: [
-    'http://localhost:3000', 
-    'https://app.gastronomos.com',
-    'https://gastronomos.clubemkt.digital',
-    'https://dbdbf0a5.gastronomos-frontend.pages.dev',
-    'https://fdfed44d.gastronomos-frontend.pages.dev',
-    'https://46e0e617.gastronomos-frontend.pages.dev',
-    'https://d4d079d5.gastronomos-frontend.pages.dev',
-    'https://dac868cd.gastronomos-frontend.pages.dev',
-    'https://gastronomos-frontend.pages.dev'
-  ],
+  origin: '*', // Allow all origins temporarily for debugging
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   credentials: true,
-  maxAge: 86400, // 24 hours
+  maxAge: 86400,
 }));
 
 // Security headers middleware
@@ -321,6 +324,9 @@ app.get('/api/v1', (c) => {
 app.use('/api/v1/auth/*', createRateLimit('auth'));
 app.route('/api/v1/auth', authRoutes);
 
+// Mount bootstrap route (no authentication required)
+app.route('/api/v1/bootstrap', bootstrapRoutes);
+
 // Apply general API rate limiting to all protected routes
 app.use('/api/v1/*', createRateLimit('api'));
 
@@ -335,6 +341,7 @@ app.route('/api/v1/users', userRoutes);
 app.route('/api/v1/locations', locationRoutes);
 app.route('/api/v1/suppliers', supplierRoutes);
 app.route('/api/v1/purchase-orders', purchaseOrderRoutes);
+app.route('/api/v1/orders', ordersRoutes);
 app.route('/api/v1/transfers', transferRoutes);
 app.route('/api/v1/transfer-notifications', transferNotificationRoutes);
 app.route('/api/v1/emergency-transfers', emergencyTransferRoutes);
@@ -357,7 +364,18 @@ app.route('/api/v1/variance-reports', varianceReportsRoutes);
 app.route('/api/v1/analytics', receiptAnalyticsRoutes);
 app.route('/api/v1', priceHistoryRoutes);
 app.route('/api/v1', auditRoutes);
+app.route('/api/v1', comprehensiveAuditRoutes);
 app.route('/api/v1', productRoutes);
+app.route('/api/v1/payments', paymentsRoutes);
+app.route('/api/v1/commission-reports', commissionReportsRoutes);
+app.route('/api/v1/kitchen', kitchenRoutes);
+app.route('/api/v1/menu', menuRoutes);
+
+// API Documentation (no authentication required for docs)
+app.route('/api/v1/docs', apiDocsRoutes);
+
+// Mount WebSocket routes (no rate limiting for WebSocket upgrades)
+app.route('/', websocketRoutes);
 
 // 404 handler for unmatched routes
 app.use('*', notFoundHandler());

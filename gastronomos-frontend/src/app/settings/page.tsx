@@ -1,203 +1,160 @@
 'use client';
 
-import React from 'react';
-import { MainLayout } from '@/components/layout/main-layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useTranslations } from '@/hooks/use-translations';
-import { useLanguage } from '@/contexts/language-context';
-import { 
-  Settings, 
-  Bell, 
-  Shield, 
-  Database, 
-  Palette, 
-  Globe,
-  Save
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { MainLayout } from '@/components/layout/main-layout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Save, LogOut } from 'lucide-react';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { useTheme } from '@/contexts/theme-context';
+import { useTranslations } from '@/hooks/use-translations';
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const { palette } = useTheme();
   const { t } = useTranslations();
-  const { language, setLanguage } = useLanguage();
+  const [loading, setLoading] = useState(false);
+  const [restaurantName, setRestaurantName] = useState('');
+  const [email, setEmail] = useState('');
+  const [tenantSlug, setTenantSlug] = useState('');
+
+  useEffect(() => {
+    const name = localStorage.getItem('restaurantName') || '';
+    const userEmail = localStorage.getItem('email') || '';
+    const slug = localStorage.getItem('tenantSlug') || '';
+    
+    setRestaurantName(name);
+    setEmail(userEmail);
+    setTenantSlug(slug);
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      localStorage.setItem('restaurantName', restaurantName);
+      localStorage.setItem('email', email);
+      toast.success(t('messages.saveSuccess'));
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast.error(t('messages.errorOccurred'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('email');
+    localStorage.removeItem('restaurantName');
+    localStorage.removeItem('tenantSlug');
+    toast.success('Desconectado com sucesso');
+    router.push('/');
+  };
 
   return (
-    <MainLayout title={t('settings.title')}>
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">{t('settings.title')}</h1>
-            <p className="text-slate-600 mt-2">{t('settings.subtitle')}</p>
-          </div>
-          <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700">
-            <Save className="h-4 w-4 mr-2" />
-            {t('settings.saveChanges')}
-          </Button>
-        </div>
+    <MainLayout>
+      <div className="space-y-6">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="text-3xl font-bold" style={{ color: palette.text }}>{t('settings.title')}</h1>
+          <p className="mt-1" style={{ color: palette.textSecondary }}>{t('settings.subtitle')}</p>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* General Settings */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="h-5 w-5 text-blue-500" />
-                  <span>{t('settings.generalSettings')}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="company-name">{t('settings.companyName')}</Label>
-                  <Input id="company-name" defaultValue="GastronomOS Demo" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="timezone">{t('settings.timezone')}</Label>
-                  <Input id="timezone" defaultValue="UTC-3 (Brasília)" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="currency">{t('settings.defaultCurrency')}</Label>
-                  <Input id="currency" defaultValue="BRL" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="language">{t('settings.language')}</Label>
-                  <Select value={language} onValueChange={(value: 'en' | 'pt-BR') => setLanguage(value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('settings.selectLanguage')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pt-BR">🇧🇷 Português Brasileiro</SelectItem>
-                      <SelectItem value="en">🇺🇸 English</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+          <Card style={{ backgroundColor: palette.surface, borderColor: palette.border }}>
+            <CardHeader>
+              <CardTitle style={{ color: palette.text }}>Informações da Conta</CardTitle>
+              <CardDescription style={{ color: palette.textSecondary }}>Atualize os detalhes da sua conta</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium" style={{ color: palette.text }}>Nome do Restaurante</Label>
+                <input
+                  type="text"
+                  value={restaurantName}
+                  onChange={(e) => setRestaurantName(e.target.value)}
+                  className="w-full mt-2 px-3 py-2 border rounded-lg focus:outline-none"
+                  style={{
+                    backgroundColor: palette.background,
+                    color: palette.text,
+                    borderColor: palette.border,
+                    '--tw-ring-color': palette.primary,
+                  } as React.CSSProperties}
+                  placeholder="Nome do seu restaurante"
+                />
+              </div>
 
-          {/* Notifications */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Bell className="h-5 w-5 text-orange-500" />
-                  <span>{t('settings.notifications')}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('settings.lowStockAlerts')}</Label>
-                    <p className="text-sm text-slate-500">{t('settings.lowStockAlertsDesc')}</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('settings.transferUpdates')}</Label>
-                    <p className="text-sm text-slate-500">{t('settings.transferUpdatesDesc')}</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('settings.orderApprovals')}</Label>
-                    <p className="text-sm text-slate-500">{t('settings.orderApprovalsDesc')}</p>
-                  </div>
-                  <Switch />
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+              <div>
+                <Label className="text-sm font-medium" style={{ color: palette.text }}>{t('forms.labels.email')}</Label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full mt-2 px-3 py-2 border rounded-lg focus:outline-none"
+                  style={{
+                    backgroundColor: palette.background,
+                    color: palette.text,
+                    borderColor: palette.border,
+                  } as React.CSSProperties}
+                  placeholder="seu@email.com"
+                />
+              </div>
 
-          {/* Security */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5 text-green-500" />
-                  <span>{t('settings.security')}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('settings.twoFactorAuth')}</Label>
-                    <p className="text-sm text-slate-500">{t('settings.twoFactorAuthDesc')}</p>
-                  </div>
-                  <Switch />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('settings.sessionTimeout')}</Label>
-                    <p className="text-sm text-slate-500">{t('settings.sessionTimeoutDesc')}</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <Separator />
-                <div className="space-y-2">
-                  <Label htmlFor="session-duration">{t('settings.sessionDuration')}</Label>
-                  <Input id="session-duration" type="number" defaultValue="8" />
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+              <div>
+                <Label className="text-sm font-medium" style={{ color: palette.text }}>ID do Restaurante</Label>
+                <input
+                  type="text"
+                  value={tenantSlug}
+                  disabled
+                  className="w-full mt-2 px-3 py-2 border rounded-lg"
+                  style={{
+                    backgroundColor: palette.background,
+                    color: palette.textSecondary,
+                    borderColor: palette.border,
+                    opacity: 0.6,
+                  } as React.CSSProperties}
+                />
+              </div>
 
-          {/* Data & Backup */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Database className="h-5 w-5 text-purple-500" />
-                  <span>{t('settings.dataBackup')}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('settings.automaticBackups')}</Label>
-                    <p className="text-sm text-slate-500">{t('settings.automaticBackupsDesc')}</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <Separator />
-                <div className="space-y-2">
-                  <Label htmlFor="retention">{t('settings.dataRetention')}</Label>
-                  <Input id="retention" type="number" defaultValue="90" />
-                </div>
-                <Separator />
-                <div className="space-y-2">
-                  <Button variant="outline" className="w-full">
-                    {t('settings.exportData')}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={handleSave}
+                  disabled={loading}
+                  className="flex items-center gap-2"
+                  style={{ backgroundColor: palette.primary, color: palette.primaryForeground }}
+                >
+                  <Save className="w-4 h-4" />
+                  {loading ? 'Salvando...' : t('forms.buttons.save')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+          <Card style={{ backgroundColor: palette.surface, borderColor: palette.border }}>
+            <CardHeader>
+              <CardTitle style={{ color: palette.text }}>Sessão</CardTitle>
+              <CardDescription style={{ color: palette.textSecondary }}>Gerencie sua sessão de login</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="flex items-center gap-2"
+                style={{
+                  color: palette.destructive,
+                  borderColor: palette.destructive,
+                }}
+              >
+                <LogOut className="w-4 h-4" />
+                Sair
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </MainLayout>
   );

@@ -7,6 +7,8 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "build": "tsc",
+    "clean": "node scripts/clean.js",
+    "seed:demo": "node scripts/seed-demo-data.js",
     "test": "vitest --run",
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate:sqlite",
@@ -27,7 +29,14 @@
     "generate:jwt-secret": "node scripts/deploy.js generate-jwt-secret",
     "db:migrate:dev": "wrangler d1 migrations apply gastronomos-dev --env development",
     "db:migrate:staging": "wrangler d1 migrations apply gastronomos-staging --env staging",
-    "db:migrate:prod": "wrangler d1 migrations apply gastronomos-prod --env production"
+    "db:migrate:prod": "wrangler d1 migrations apply gastronomos-prod --env production",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "health:check": "curl -s http://localhost:8787/health || echo 'Server not running'",
+    "logs:dev": "wrangler tail --env development",
+    "logs:staging": "wrangler tail --env staging",
+    "logs:prod": "wrangler tail --env production"
   },
   "keywords": [
     "cloudflare-workers",

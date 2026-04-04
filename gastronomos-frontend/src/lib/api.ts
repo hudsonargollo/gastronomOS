@@ -92,20 +92,20 @@ export class ApiClient {
   }
 
   // Auth endpoints
-  async login(email: string, password: string) {
+  async login(email: string, password: string, tenantSlug: string = 'demo-restaurant') {
     return this.request<{ token: string; user: any }>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, tenantSlug }),
     });
   }
 
   async register(data: {
     email: string;
     password: string;
-    tenantName: string;
+    role: string;
     tenantSlug: string;
   }) {
-    return this.request<{ token: string; user: any; tenant: any }>('/auth/register', {
+    return this.request<{ token: string; user: any }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -494,6 +494,75 @@ export class ApiClient {
   // Analytics
   async getAnalytics(type: 'receipts' | 'transfers' | 'allocations') {
     return this.request<any>(`/analytics/${type}`);
+  }
+
+  // Menu Items (Digital Menu System)
+  async getMenuItems(params?: PaginationParams & SearchParams & {
+    categoryId?: string;
+    isAvailable?: boolean;
+  }) {
+    const queryString = params ? this.buildQueryString(params) : '';
+    return this.request<ApiResponse<{ menuItems: any[]; pagination?: any }>>(`/menu-items${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getMenuItem(id: string) {
+    return this.request<ApiResponse<{ menuItem: any }>>(`/menu-items/${id}`);
+  }
+
+  async createMenuItem(data: any) {
+    return this.request<ApiResponse<{ menuItem: any }>>('/menu-items', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateMenuItem(id: string, data: any) {
+    return this.request<ApiResponse<{ menuItem: any }>>(`/menu-items/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteMenuItem(id: string) {
+    return this.request<ApiResponse<{ message: string }>>(`/menu-items/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Orders (Digital Menu System)
+  async getOrders(params?: PaginationParams & {
+    state?: string;
+    waiterId?: string;
+    locationId?: string;
+    tableNumber?: string;
+  }) {
+    const queryString = params ? this.buildQueryString(params) : '';
+    return this.request<ApiResponse<{ orders: any[]; pagination?: any }>>(`/orders${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getOrder(id: string) {
+    return this.request<ApiResponse<{ order: any }>>(`/orders/${id}`);
+  }
+
+  async createOrder(data: any) {
+    return this.request<ApiResponse<{ order: any }>>('/orders', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateOrder(id: string, data: any) {
+    return this.request<ApiResponse<{ order: any }>>(`/orders/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async transitionOrderState(id: string, data: { toState: string; reason?: string }) {
+    return this.request<ApiResponse<{ order: any }>>(`/orders/${id}/transition`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 }
 

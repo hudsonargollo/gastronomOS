@@ -38,14 +38,15 @@ BCRYPT_ROUNDS = "12"
 binding = "AI"
 
 # Production environment configuration
-[env.production.vars]
-ENVIRONMENT = "production"
-LOG_LEVEL = "warn"
-CACHE_TTL = "900"
-JWT_EXPIRY = "28800"
-BCRYPT_ROUNDS = "14"
-RATE_LIMIT_ENABLED = "true"
-AUDIT_LOG_RETENTION_DAYS = "90"
+[env.production]
+workers_dev = true
+vars.ENVIRONMENT = "production"
+vars.LOG_LEVEL = "warn"
+vars.CACHE_TTL = "900"
+vars.JWT_EXPIRY = "28800"
+vars.BCRYPT_ROUNDS = "14"
+vars.RATE_LIMIT_ENABLED = "true"
+vars.AUDIT_LOG_RETENTION_DAYS = "90"
 
 # Production routes for custom domain
 [[env.production.routes]]
@@ -72,17 +73,39 @@ binding = "AI"
 # class_name = "QueueStateManager"
 # script_name = "gastronomos"
 
+# WebSocket Durable Object binding
+[[durable_objects.bindings]]
+name = "WEBSOCKET_DO"
+class_name = "WebSocketDurableObject"
+
+[[env.development.durable_objects.bindings]]
+name = "WEBSOCKET_DO"
+class_name = "WebSocketDurableObject"
+
+[[env.staging.durable_objects.bindings]]
+name = "WEBSOCKET_DO"
+class_name = "WebSocketDurableObject"
+
+[[env.production.durable_objects.bindings]]
+name = "WEBSOCKET_DO"
+class_name = "WebSocketDurableObject"
+
+# Durable Objects migrations (using SQLite for free plan)
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["WebSocketDurableObject"]
+
 # D1 Database bindings for each environment
 [[env.development.d1_databases]]
 binding = "DB"
 database_name = "gastronomos-dev"
-database_id = "your-dev-database-id-here"
+database_id = "44291052-a433-4e15-a6c4-dc1af440c9ca"
 migrations_dir = "migrations"
 
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "gastronomos-staging"
-database_id = "your-staging-database-id-here"
+database_id = "44291052-a433-4e15-a6c4-dc1af440c9ca"
 migrations_dir = "migrations"
 
 [[env.production.d1_databases]]
@@ -95,7 +118,7 @@ migrations_dir = "migrations"
 [[d1_databases]]
 binding = "DB"
 database_name = "gastronomos-db"
-database_id = "your-database-id-here"
+database_id = "44291052-a433-4e15-a6c4-dc1af440c9ca"
 migrations_dir = "migrations"
 
 # Worker limits and configuration (disabled for free plan)

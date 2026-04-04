@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Demo Account NOW</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .big-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100%;
+            margin: 10px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .big-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .big-button:active {
+            transform: translateY(0);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+        .loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+        .credentials {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        .credentials strong {
+            color: #667eea;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+        }
+        .step-number {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Create Demo Account</h1>
+        <p class="subtitle">Click the button below to create your demo account in the production database</p>
+
+        <div class="credentials">
+            <strong>Demo Credentials:</strong><br>
+            📧 Email: demo@gastronomos.com<br>
+            🔑 Password: demo123456<br>
+            🏢 Tenant: Demo Restaurant<br>
+            🔗 Slug: demo-restaurant
+        </div>
+
+        <button class="big-button" onclick="createAccount()">
+            ✨ CREATE DEMO ACCOUNT NOW ✨
+        </button>
+
+        <button class="big-button" onclick="testLogin()" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            🔐 TEST LOGIN
+        </button>
+
+        <div id="result" class="result"></div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee;">
+            <h3 style="color: #333; margin-bottom: 15px;">📋 Next Steps After Account Creation:</h3>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>Rebuild Frontend:</strong><br>
+                <code style="background: #fff; padding: 5px; border-radius: 3px; display: block; margin-top: 5px;">
+                    cd gastronomos-frontend && npm run build
+                </code>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>Deploy Frontend:</strong><br>
+                <code style="background: #fff; padding: 5px; border-radius: 3px; display: block; margin-top: 5px;">
+                    npx wrangler pages deploy out --project-name=gastronomos-frontend
+                </code>
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>Test Demo Login:</strong><br>
+                Go to <a href="https://gastronomos-frontend.pages.dev" target="_blank">gastronomos-frontend.pages.dev</a> and click "Load Demo Credentials"
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://gastronomos-production.hudsonargollo2.workers.dev';
+
+        async function createAccount() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = '⏳ Creating demo account...\n\nPlease wait...';
+
+            try {
+                // Use bootstrap endpoint to create both tenant and user
+                const response = await fetch(`${API_BASE}/api/v1/bootstrap`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'demo@gastronomos.com',
+                        password: 'demo123456',
+                        tenantName: 'Demo Restaurant',
+                        tenantSlug: 'demo-restaurant'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ SUCCESS! Demo account created!\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n\n` +
+                        `Response:\n${JSON.stringify(data, null, 2)}\n\n` +
+                        `🎉 You can now proceed with the next steps below!`;
+                } else if (response.status === 409 || data.error?.includes('already exists')) {
+                    resultDiv.className = 'result info';
+                    resultDiv.textContent = `ℹ️ Demo account already exists!\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n\n` +
+                        `Response:\n${JSON.stringify(data, null, 2)}\n\n` +
+                        `✅ You can proceed with the next steps below!`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `⚠️ Unexpected response:\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n\n` +
+                        `Response:\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ ERROR!\n\n` +
+                    `${error.message}\n\n` +
+                    `Make sure:\n` +
+                    `1. You have internet connection\n` +
+                    `2. The API is deployed and running\n` +
+                    `3. CORS is properly configured`;
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = '⏳ Testing login...\n\nPlease wait...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'demo@gastronomos.com',
+                        password: 'demo123456',
+                        tenantSlug: 'demo-restaurant'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ LOGIN SUCCESSFUL!\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n\n` +
+                        `Token: ${data.token?.substring(0, 60)}...\n\n` +
+                        `User Info:\n${JSON.stringify(data.user, null, 2)}\n\n` +
+                        `🎉 Demo login is working! You can now deploy the frontend!`;
+                    
+                    // Store token
+                    localStorage.setItem('demo_token', data.token);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ LOGIN FAILED!\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n\n` +
+                        `Response:\n${JSON.stringify(data, null, 2)}\n\n` +
+                        `Make sure the demo account was created first!`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ ERROR!\n\n${error.message}`;
+            }
+        }
+
+        // Auto-focus on page load
+        window.onload = function() {
+            document.querySelector('.big-button').focus();
+        };
+    </script>
+</body>
+</html>

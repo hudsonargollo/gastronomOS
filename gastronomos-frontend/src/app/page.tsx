@@ -12,6 +12,7 @@ import { Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const [formData, setFormData] = React.useState({
     email: '',
     password: '',
+    tenantSlug: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,7 +30,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await apiClient.login(formData.email, formData.password);
+      const response = await apiClient.login(formData.email, formData.password, formData.tenantSlug || 'demo-restaurant');
       apiClient.setToken(response.token);
       toast.success(t('auth.welcomeBackSuccess'));
       router.push('/dashboard');
@@ -39,12 +41,20 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoLogin = () => {
-    setFormData({
-      email: 'demo@gastronomos.com',
-      password: 'demo123',
-    });
-    toast.info(t('auth.demoCredentials'));
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    
+    try {
+      const response = await apiClient.login('demo@gastronomos.com', 'demo123', 'demo-restaurant');
+      apiClient.setToken(response.token);
+      toast.success(t('auth.welcomeBackSuccess'));
+      router.push('/dashboard');
+    } catch (error) {
+      setFormData({ email: 'demo@gastronomos.com', password: 'demo123', tenantSlug: 'demo-restaurant' });
+      toast.error(error instanceof Error ? error.message : 'Demo account not available. Please register first.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -74,24 +84,24 @@ export default function LoginPage() {
             <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
               GastronomOS
             </h1>
-            <p className="text-slate-600 text-sm mt-1">O Sistema Operacional do seu Restaurante</p>
+            <p className="text-slate-600 text-sm mt-1">Sistema de Gestão</p>
           </div>
 
           {/* Login Card */}
           <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="text-center pb-6">
               <CardTitle className="text-xl font-semibold text-slate-900">
-                {t('auth.welcomeBack')}
+                Bem-vindo
               </CardTitle>
               <CardDescription className="text-slate-600">
-                {t('auth.signInToAccount')}
+                Entre na sua conta
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium text-slate-700">
-                    {t('auth.email')}
+                    E-mail
                   </Label>
                   <Input
                     id="email"
@@ -106,7 +116,7 @@ export default function LoginPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-medium text-slate-700">
-                    {t('auth.password')}
+                    Senha
                   </Label>
                   <div className="relative">
                     <Input
@@ -134,6 +144,20 @@ export default function LoginPage() {
                   </div>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="tenantSlug" className="text-sm font-medium text-slate-700">
+                    ID do Restaurante
+                  </Label>
+                  <Input
+                    id="tenantSlug"
+                    type="text"
+                    placeholder="meu-restaurante (deixe vazio para demo)"
+                    value={formData.tenantSlug}
+                    onChange={(e) => setFormData(prev => ({ ...prev, tenantSlug: e.target.value }))}
+                    className="h-11 bg-white border-slate-200 focus:border-orange-500 focus:ring-orange-500"
+                  />
+                </div>
+
                 <Button
                   type="submit"
                   className="w-full h-11 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
@@ -146,7 +170,7 @@ export default function LoginPage() {
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <span>{t('auth.signIn')}</span>
+                      <span>Entrar</span>
                       <ArrowRight className="h-4 w-4" />
                     </div>
                   )}
@@ -169,10 +193,19 @@ export default function LoginPage() {
                 >
                   <div className="flex items-center space-x-2">
                     <Sparkles className="h-4 w-4 text-orange-500" />
-                    <span>{t('auth.tryDemo')}</span>
+                    <span>Demo</span>
                   </div>
                 </Button>
               </form>
+
+              <div className="mt-4 text-center">
+                <Link 
+                  href="/register"
+                  className="text-sm text-slate-600 hover:text-orange-600 transition-colors"
+                >
+                  Não tem conta? <span className="font-semibold">Registre-se</span>
+                </Link>
+              </div>
             </CardContent>
           </Card>
 
@@ -188,7 +221,7 @@ export default function LoginPage() {
                 <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
                   <GastronomyIcons.Warehouse className="h-4 w-4 text-orange-600" />
                 </div>
-                <span>Gestão de Estoque</span>
+                <span>Estoque</span>
               </div>
               <div className="flex flex-col items-center space-y-1">
                 <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">

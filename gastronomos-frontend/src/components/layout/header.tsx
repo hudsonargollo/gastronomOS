@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Search, Menu, Sun, Moon, User, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { Bell, Search, Menu, Sun, Moon, User, LogOut, Settings, ChevronDown, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -16,14 +16,17 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTranslations } from '@/hooks/use-translations';
+import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
   onMenuClick?: () => void;
   title?: string;
+  onStartTour?: () => void;
 }
 
-export function Header({ onMenuClick, title = 'Dashboard' }: HeaderProps) {
+export function Header({ onMenuClick, title = 'Dashboard', onStartTour }: HeaderProps) {
   const { t } = useTranslations();
+  const router = useRouter();
   const [isDark, setIsDark] = React.useState(false);
   const [showMobileSearch, setShowMobileSearch] = React.useState(false);
   const [notifications] = React.useState([
@@ -34,6 +37,17 @@ export function Header({ onMenuClick, title = 'Dashboard' }: HeaderProps) {
 
   const toggleTheme = () => {
     setIsDark(!isDark);
+  };
+
+  const handleLogout = () => {
+    // Clear any stored auth data
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      sessionStorage.clear();
+    }
+    // Redirect to login page
+    router.push('/');
   };
 
   return (
@@ -93,6 +107,19 @@ export function Header({ onMenuClick, title = 'Dashboard' }: HeaderProps) {
           >
             {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
+
+          {/* Help/Tour button */}
+          {onStartTour && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onStartTour}
+              className="h-9 w-9 p-0"
+              title="Fazer tour do sistema"
+            >
+              <HelpCircle className="h-4 w-4" />
+            </Button>
+          )}
 
           {/* Notifications */}
           <DropdownMenu>
@@ -186,7 +213,7 @@ export function Header({ onMenuClick, title = 'Dashboard' }: HeaderProps) {
                 <span>{t('navigation.settings')}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600 cursor-pointer">
+              <DropdownMenuItem className="text-red-600 cursor-pointer" onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>{t('header.logOut')}</span>
               </DropdownMenuItem>

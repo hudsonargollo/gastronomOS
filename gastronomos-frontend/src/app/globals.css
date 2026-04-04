@@ -122,6 +122,52 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Adaptive Gastronomy Design System - Semantic Tokens */
+  :root {
+    /* Action tokens */
+    --token-action-primary: var(--color-primary);
+    --token-action-secondary: var(--color-secondary);
+    --token-action-danger: #dc2626;
+    --token-action-success: #16a34a;
+    
+    /* Surface tokens */
+    --token-surface-base: var(--color-background);
+    --token-surface-elevated: var(--color-surface);
+    --token-surface-overlay: rgba(0, 0, 0, 0.95);
+    
+    /* Border tokens */
+    --token-border-subtle: rgba(0, 0, 0, 0.1);
+    --token-border-default: rgba(0, 0, 0, 0.2);
+    --token-border-strong: rgba(0, 0, 0, 0.3);
+    
+    /* Text tokens */
+    --token-text-primary: var(--color-text);
+    --token-text-secondary: var(--color-text-secondary);
+    --token-text-tertiary: rgba(0, 0, 0, 0.6);
+    --token-text-inverse: var(--color-background);
+    
+    /* Status tokens */
+    --token-status-info: #3b82f6;
+    --token-status-success: #16a34a;
+    --token-status-warning: #f59e0b;
+    --token-status-error: #dc2626;
+    
+    /* Interactive tokens */
+    --token-interactive-hover: rgba(0, 0, 0, 0.9);
+    --token-interactive-active: rgba(0, 0, 0, 0.8);
+    --token-interactive-focus: var(--color-accent);
+    --token-interactive-disabled: rgba(0, 0, 0, 0.4);
+    
+    /* Typography tokens */
+    --font-heading: 'Syne', system-ui, -apple-system, sans-serif;
+    --font-body: 'JetBrains Mono', 'Courier New', monospace;
+  }
+  
+  /* Apply typography to headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
 }
 
 /* Mobile-optimized utilities */

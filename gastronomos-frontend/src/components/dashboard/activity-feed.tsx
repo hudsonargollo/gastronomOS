@@ -31,50 +31,50 @@ const mockActivities: ActivityItem[] = [
   {
     id: '1',
     type: 'purchase',
-    title: 'Purchase Order Approved',
-    description: 'PO-2024-001 for fresh vegetables approved and sent to supplier',
-    user: { name: 'Sarah Johnson', initials: 'SJ' },
-    timestamp: '2 minutes ago',
+    title: 'Pedido Aprovado',
+    description: 'PO-2024-001 para vegetais frescos aprovado e enviado ao fornecedor',
+    user: { name: 'Sarah Silva', initials: 'SS' },
+    timestamp: '2 minutos atrás',
     status: 'completed',
-    metadata: { amount: '$1,245.50', items: 15 },
+    metadata: { amount: 'R$ 1.245,50', items: 15 },
   },
   {
     id: '2',
     type: 'transfer',
-    title: 'Transfer Completed',
-    description: 'Tomatoes transferred from Central Kitchen to Downtown Location',
-    user: { name: 'Mike Chen', initials: 'MC' },
-    timestamp: '5 minutes ago',
+    title: 'Transferência Concluída',
+    description: 'Tomates transferidos do Estoque para a Cozinha Principal',
+    user: { name: 'Miguel Santos', initials: 'MS' },
+    timestamp: '5 minutos atrás',
     status: 'completed',
-    metadata: { location: 'Downtown', items: 50 },
+    metadata: { location: 'Cozinha', items: 50 },
   },
   {
     id: '3',
     type: 'alert',
-    title: 'Low Stock Alert',
-    description: 'Olive oil running low at Westside Location',
-    user: { name: 'System', initials: 'SY' },
-    timestamp: '8 minutes ago',
+    title: 'Alerta de Estoque Baixo',
+    description: 'Azeite com estoque baixo no Local Oeste',
+    user: { name: 'Sistema', initials: 'SY' },
+    timestamp: '8 minutos atrás',
     status: 'warning',
-    metadata: { location: 'Westside' },
+    metadata: { location: 'Oeste' },
   },
   {
     id: '4',
     type: 'receipt',
-    title: 'Receipt Processed',
-    description: 'Receipt from Green Valley Farms processed and matched',
-    user: { name: 'Emma Davis', initials: 'ED' },
-    timestamp: '12 minutes ago',
+    title: 'Recibo Processado',
+    description: 'Recibo da Fazenda Vale Verde processado e conferido',
+    user: { name: 'Ana Costa', initials: 'AC' },
+    timestamp: '12 minutos atrás',
     status: 'completed',
-    metadata: { amount: '$892.30' },
+    metadata: { amount: 'R$ 892,30' },
   },
   {
     id: '5',
     type: 'allocation',
-    title: 'Allocation Updated',
-    description: 'Weekly allocation template applied to all locations',
-    user: { name: 'David Wilson', initials: 'DW' },
-    timestamp: '15 minutes ago',
+    title: 'Alocação Atualizada',
+    description: 'Modelo de alocação semanal aplicado a todos os locais',
+    user: { name: 'Carlos Lima', initials: 'CL' },
+    timestamp: '15 minutos atrás',
     status: 'completed',
     metadata: { items: 120 },
   },
@@ -133,7 +133,7 @@ export function ActivityFeed() {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-          <span>Recent Activity</span>
+          <span>Atividade Recente</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 max-h-96 overflow-y-auto">
@@ -197,7 +197,7 @@ export function ActivityFeed() {
                     )}
                     {activity.metadata?.items && (
                       <Badge variant="outline" className="text-xs">
-                        {activity.metadata.items} items
+                        {activity.metadata.items} itens
                       </Badge>
                     )}
                   </div>

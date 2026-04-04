@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Demo Account - GastronomOS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .info-box h3 {
+            color: #667eea;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .info-box p {
+            color: #555;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .credentials {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .credentials div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .credentials div:last-child {
+            margin-bottom: 0;
+        }
+        
+        .credentials strong {
+            color: #333;
+        }
+        
+        .credentials span {
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.6;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: block;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            display: block;
+        }
+        
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            display: block;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .api-url {
+            font-size: 12px;
+            color: #999;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .api-url code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Create Demo Account</h1>
+        <p class="subtitle">GastronomOS - Restaurant Management System</p>
+        
+        <div class="info-box">
+            <h3>📋 What this does:</h3>
+            <p>This will create a demo account in your production database that you can use to test the system.</p>
+        </div>
+        
+        <div class="credentials">
+            <div>
+                <strong>Email:</strong>
+                <span>demo@gastronomos.com</span>
+            </div>
+            <div>
+                <strong>Password:</strong>
+                <span>demo123</span>
+            </div>
+            <div>
+                <strong>Tenant:</strong>
+                <span>Demo Restaurant</span>
+            </div>
+        </div>
+        
+        <button id="createBtn" onclick="createDemoAccount()">
+            Create Demo Account
+        </button>
+        
+        <div id="result" class="result"></div>
+        
+        <div class="api-url">
+            API: <code>api.gastronomos.clubemkt.digital</code>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.gastronomos.clubemkt.digital/api/v1';
+        
+        async function createDemoAccount() {
+            const btn = document.getElementById('createBtn');
+            const result = document.getElementById('result');
+            
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>Creating account...';
+            result.style.display = 'none';
+            
+            try {
+                // Try to register
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'demo@gastronomos.com',
+                        password: 'demo123',
+                        tenantName: 'Demo Restaurant',
+                        tenantSlug: 'demo-restaurant'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Success!
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <strong>✅ Success!</strong><br><br>
+                        Demo account created successfully!<br><br>
+                        <strong>Login credentials:</strong><br>
+                        Email: demo@gastronomos.com<br>
+                        Password: demo123<br><br>
+                        <strong>User ID:</strong> ${data.user.id}<br>
+                        <strong>Tenant:</strong> ${data.tenant.name}<br><br>
+                        You can now use the "Testar Conta Demo" button on the login page!
+                    `;
+                    btn.innerHTML = '✅ Account Created!';
+                    btn.style.background = '#28a745';
+                } else if (response.status === 409 || data.message?.includes('already exists')) {
+                    // Account already exists - verify it works
+                    result.className = 'result info';
+                    result.innerHTML = '<strong>ℹ️ Account already exists!</strong><br><br>Verifying login...';
+                    
+                    // Try to login
+                    const loginResponse = await fetch(`${API_BASE_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: 'demo@gastronomos.com',
+                            password: 'demo123'
+                        })
+                    });
+                    
+                    if (loginResponse.ok) {
+                        const loginData = await loginResponse.json();
+                        result.className = 'result success';
+                        result.innerHTML = `
+                            <strong>✅ Demo account verified!</strong><br><br>
+                            The demo account already exists and login works correctly.<br><br>
+                            <strong>User:</strong> ${loginData.user.email}<br>
+                            <strong>Role:</strong> ${loginData.user.role}<br>
+                            <strong>Tenant ID:</strong> ${loginData.user.tenant_id}<br><br>
+                            You can use the "Testar Conta Demo" button on the login page!
+                        `;
+                        btn.innerHTML = '✅ Account Ready!';
+                        btn.style.background = '#28a745';
+                    } else {
+                        result.className = 'result error';
+                        result.innerHTML = `
+                            <strong>⚠️ Account exists but login failed</strong><br><br>
+                            The account exists but there might be an issue with the credentials.<br>
+                            Error: ${loginData.message || 'Unknown error'}
+                        `;
+                        btn.innerHTML = 'Try Again';
+                        btn.disabled = false;
+                    }
+                } else {
+                    // Other error
+                    result.className = 'result error';
+                    result.innerHTML = `
+                        <strong>❌ Error creating account</strong><br><br>
+                        ${data.message || data.error || 'Unknown error'}<br><br>
+                        Status: ${response.status}
+                    `;
+                    btn.innerHTML = 'Try Again';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `
+                    <strong>❌ Connection Error</strong><br><br>
+                    Could not connect to the API.<br><br>
+                    Error: ${error.message}<br><br>
+                    Make sure the API is running at:<br>
+                    <code>${API_BASE_URL}</code>
+                `;
+                btn.innerHTML = 'Try Again';
+                btn.disabled = false;
+            }
+        }
+        
+        // Test API connection on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL.replace('/api/v1', '')}/health`);
+                if (response.ok) {
+                    console.log('✅ API is reachable');
+                } else {
+                    console.warn('⚠️ API returned non-OK status:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ Cannot reach API:', error.message);
+            }
+        });
+    </script>
+</body>
+</html>

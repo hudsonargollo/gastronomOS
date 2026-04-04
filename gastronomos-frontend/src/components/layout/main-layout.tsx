@@ -9,9 +9,10 @@ import { Toaster } from '@/components/ui/sonner';
 interface MainLayoutProps {
   children: React.ReactNode;
   title?: string;
+  onStartTour?: () => void;
 }
 
-export function MainLayout({ children, title }: MainLayoutProps) {
+export function MainLayout({ children, title, onStartTour }: MainLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -91,7 +92,7 @@ export function MainLayout({ children, title }: MainLayoutProps) {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
-        <Header onMenuClick={toggleSidebar} title={title} />
+        <Header onMenuClick={toggleSidebar} title={title} onStartTour={onStartTour} />
         
         <main className="flex-1 overflow-y-auto">
           <motion.div

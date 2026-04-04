@@ -120,3 +120,8 @@ export async function executeWithRetry<T>(
 ): Promise<T> {
   return dbPool.executeWithRetry(operation);
 }
+
+// Helper function to get database instance (for Cloudflare Workers)
+export function getDb(env: { DB: D1Database }): any {
+  return drizzle(env.DB);
+}

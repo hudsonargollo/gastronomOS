@@ -23,46 +23,71 @@ app.use('*', cors({
 // API proxy - forward all /api requests to the backend worker
 app.all('/api/*', async (c) => {
   const url = new URL(c.req.url);
-  const backendUrl = `https://gastronomos-production.hudsonargollo2.workers.dev${url.pathname}${url.search}`;
+  // Try both the custom domain and workers.dev domain
+  const backendUrls = [
+    `https://api.gastronomos.clubemkt.digital${url.pathname}${url.search}`,
+    `https://gastronomos-production.hudsonargollo2.workers.dev${url.pathname}${url.search}`
+  ];
   
-  try {
-    const response = await fetch(backendUrl, {
-      method: c.req.method,
-      headers: {
-        ...Object.fromEntries(Object.entries(c.req.header())),
-        'Origin': 'https://gastronomos.clubemkt.digital',
-        'Referer': 'https://gastronomos.clubemkt.digital'
-      },
-      body: c.req.method !== 'GET' && c.req.method !== 'HEAD' ? await c.req.arrayBuffer() : undefined,
-    });
+  let lastError: Error | null = null;
+  
+  for (const backendUrl of backendUrls) {
+    try {
+      console.log(`Trying backend URL: ${backendUrl}`);
+      
+      const response = await fetch(backendUrl, {
+        method: c.req.method,
+        headers: {
+          ...Object.fromEntries(Object.entries(c.req.header())),
+          'Origin': 'https://gastronomos.clubemkt.digital',
+          'Referer': 'https://gastronomos.clubemkt.digital'
+        },
+        body: c.req.method !== 'GET' && c.req.method !== 'HEAD' ? await c.req.arrayBuffer() : undefined,
+      });
 
-    // Copy response headers
-    const responseHeaders = new Headers();
-    response.headers.forEach((value, key) => {
-      // Skip headers that might cause issues
-      if (!['content-encoding', 'content-length', 'transfer-encoding'].includes(key.toLowerCase())) {
-        responseHeaders.set(key, value);
+      console.log(`Backend response status: ${response.status}`);
+      
+      // If we get a successful response, use it
+      if (response.ok || response.status < 500) {
+        // Copy response headers
+        const responseHeaders = new Headers();
+        response.headers.forEach((value, key) => {
+          // Skip headers that might cause issues
+          if (!['content-encoding', 'content-length', 'transfer-encoding'].includes(key.toLowerCase())) {
+            responseHeaders.set(key, value);
+          }
+        });
+
+        // Ensure CORS headers are set
+        responseHeaders.set('Access-Control-Allow-Origin', '*');
+        responseHeaders.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        responseHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+        return new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: responseHeaders,
+        });
       }
-    });
-
-    // Ensure CORS headers are set
-    responseHeaders.set('Access-Control-Allow-Origin', '*');
-    responseHeaders.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    responseHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: responseHeaders,
-    });
-  } catch (error) {
-    console.error('API proxy error:', error);
-    return c.json({ 
-      error: 'API proxy failed', 
-      message: error instanceof Error ? error.message : 'Unknown error',
-      backend: 'gastronomos-production.hudsonargollo2.workers.dev'
-    }, 500);
+      
+      // If we get a server error, try the next URL
+      lastError = new Error(`Backend returned ${response.status}: ${response.statusText}`);
+      
+    } catch (error) {
+      console.error(`Failed to connect to ${backendUrl}:`, error);
+      lastError = error instanceof Error ? error : new Error('Unknown error');
+      continue; // Try the next URL
+    }
   }
+  
+  // If all backends failed, return an error
+  console.error('All backend URLs failed:', lastError);
+  return c.json({ 
+    error: 'All API backends failed', 
+    message: lastError?.message || 'Unknown error',
+    backends: backendUrls,
+    timestamp: new Date().toISOString()
+  }, 500);
 });
 
 // Health check
@@ -255,7 +280,7 @@ function getSimpleLoginPage(): string {
     'alert("Erro no login");',
     '}',
     '} catch (error) {',
-    'alert("Erro de conexão");',
+    'alert("Erro de conexão: " + error.message);',
     '}',
     '}',
     '</script>',

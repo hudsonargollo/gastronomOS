@@ -729,6 +729,55 @@ export type NewProductAuditLog = typeof productAuditLog.$inferInsert;
 export type ProductAnalytics = typeof productAnalytics.$inferSelect;
 export type NewProductAnalytics = typeof productAnalytics.$inferInsert;
 
+// Digital Menu System Types
+export type MenuItem = typeof menuItems.$inferSelect;
+export type NewMenuItem = typeof menuItems.$inferInsert;
+
+export type Recipe = typeof recipes.$inferSelect;
+export type NewRecipe = typeof recipes.$inferInsert;
+
+export type RecipeIngredient = typeof recipeIngredients.$inferSelect;
+export type NewRecipeIngredient = typeof recipeIngredients.$inferInsert;
+
+export type Order = typeof orders.$inferSelect;
+export type NewOrder = typeof orders.$inferInsert;
+
+export type OrderItem = typeof orderItems.$inferSelect;
+export type NewOrderItem = typeof orderItems.$inferInsert;
+
+export type OrderStateTransition = typeof orderStateTransitions.$inferSelect;
+export type NewOrderStateTransition = typeof orderStateTransitions.$inferInsert;
+
+export type Payment = typeof payments.$inferSelect;
+export type NewPayment = typeof payments.$inferInsert;
+
+export type SplitPayment = typeof splitPayments.$inferSelect;
+export type NewSplitPayment = typeof splitPayments.$inferInsert;
+
+export type Commission = typeof commissions.$inferSelect;
+export type NewCommission = typeof commissions.$inferInsert;
+
+export type CommissionConfig = typeof commissionConfigs.$inferSelect;
+export type NewCommissionConfig = typeof commissionConfigs.$inferInsert;
+
+export type PaymentGatewayConfig = typeof paymentGatewayConfigs.$inferSelect;
+export type NewPaymentGatewayConfig = typeof paymentGatewayConfigs.$inferInsert;
+
+export type InventoryConsumption = typeof inventoryConsumptions.$inferSelect;
+export type NewInventoryConsumption = typeof inventoryConsumptions.$inferInsert;
+
+export type StockAlertConfig = typeof stockAlertConfigs.$inferSelect;
+export type NewStockAlertConfig = typeof stockAlertConfigs.$inferInsert;
+
+export type StockAlert = typeof stockAlerts.$inferSelect;
+export type NewStockAlert = typeof stockAlerts.$inferInsert;
+
+export type StockAlertNotification = typeof stockAlertNotifications.$inferSelect;
+export type NewStockAlertNotification = typeof stockAlertNotifications.$inferInsert;
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type NewAuditLog = typeof auditLogs.$inferInsert;
+
 // Enum types and values
 export const UserRoleType = {
   ADMIN: 'ADMIN',
@@ -877,6 +926,105 @@ export type ProductAuditAction = typeof ProductAuditActionType[keyof typeof Prod
 export const ProductStatus = ProductStatusType;
 export const ProductRelationshipTypeEnum = ProductRelationshipType;
 export const ProductAuditAction = ProductAuditActionType;
+
+// Order system enum types
+export const OrderStateType = {
+  PLACED: 'PLACED',
+  PREPARING: 'PREPARING',
+  READY: 'READY',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED'
+} as const;
+
+export type OrderState = typeof OrderStateType[keyof typeof OrderStateType];
+
+export const OrderItemStatusType = {
+  PENDING: 'PENDING',
+  PREPARING: 'PREPARING',
+  READY: 'READY',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED'
+} as const;
+
+export type OrderItemStatus = typeof OrderItemStatusType[keyof typeof OrderItemStatusType];
+
+export const PaymentMethodType = {
+  PIX: 'PIX',
+  CREDIT_CARD: 'CREDIT_CARD',
+  DEBIT_CARD: 'DEBIT_CARD',
+  MANUAL_CARD: 'MANUAL_CARD',
+  CASH: 'CASH'
+} as const;
+
+export type PaymentMethod = typeof PaymentMethodType[keyof typeof PaymentMethodType];
+
+export const PaymentStatusType = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+} as const;
+
+export type PaymentStatus = typeof PaymentStatusType[keyof typeof PaymentStatusType];
+
+export const CommissionTypeEnum = {
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED_VALUE: 'FIXED_VALUE'
+} as const;
+
+export type CommissionType = typeof CommissionTypeEnum[keyof typeof CommissionTypeEnum];
+
+export const PaymentGatewayProviderType = {
+  MERCADO_PAGO: 'MERCADO_PAGO'
+} as const;
+
+export type PaymentGatewayProvider = typeof PaymentGatewayProviderType[keyof typeof PaymentGatewayProviderType];
+
+// Export enum values for runtime usage
+export const OrderState = OrderStateType;
+export const OrderItemStatus = OrderItemStatusType;
+export const PaymentMethod = PaymentMethodType;
+export const PaymentStatus = PaymentStatusType;
+export const CommissionType = CommissionTypeEnum;
+export const PaymentGatewayProvider = PaymentGatewayProviderType;
+
+// Stock alert enum types
+export const StockAlertType = {
+  LOW_STOCK: 'LOW_STOCK',
+  CRITICAL_STOCK: 'CRITICAL_STOCK',
+  OUT_OF_STOCK: 'OUT_OF_STOCK'
+} as const;
+
+export type StockAlertTypeValue = typeof StockAlertType[keyof typeof StockAlertType];
+
+export const StockAlertSeverity = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL'
+} as const;
+
+export type StockAlertSeverityValue = typeof StockAlertSeverity[keyof typeof StockAlertSeverity];
+
+export const NotificationType = {
+  EMAIL: 'EMAIL',
+  SMS: 'SMS',
+  PUSH: 'PUSH',
+  WEBHOOK: 'WEBHOOK'
+} as const;
+
+export type NotificationTypeValue = typeof NotificationType[keyof typeof NotificationType];
+
+export const NotificationStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+} as const;
+
+export type NotificationStatusValue = typeof NotificationStatus[keyof typeof NotificationStatus];
 
 // Relations
 export const tenantsRelations = relations(tenants, ({ many }) => ({
@@ -1029,5 +1177,621 @@ export const inventoryItemsRelations = relations(inventoryItems, ({ one }) => ({
   location: one(locations, {
     fields: [inventoryItems.locationId],
     references: [locations.id],
+  }),
+}));
+
+// Digital Menu System Tables
+
+// Menu items table
+export const menuItems = sqliteTable('menu_items', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  name: text('name').notNull(),
+  description: text('description'),
+  price: integer('price_cents').notNull(),
+  categoryId: text('category_id').references(() => categories.id),
+  isAvailable: integer('is_available', { mode: 'boolean' }).notNull().default(true),
+  preparationTime: integer('preparation_time').notNull().default(15), // minutes
+  imageUrl: text('image_url'),
+  allergens: text('allergens'), // JSON array
+  nutritionalInfo: text('nutritional_info'), // JSON object
+  active: integer('active', { mode: 'boolean' }).notNull().default(true),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+}, (table) => ({
+  tenantIdx: index('menu_item_tenant_idx').on(table.tenantId),
+  tenantNameIdx: index('menu_item_tenant_name_idx').on(table.tenantId, table.name),
+  categoryIdx: index('menu_item_category_idx').on(table.categoryId),
+  availableIdx: index('menu_item_available_idx').on(table.isAvailable),
+  activeIdx: index('menu_item_active_idx').on(table.active),
+  tenantNameUnique: uniqueIndex('menu_items_tenant_id_name_unique').on(table.tenantId, table.name),
+}));
+
+// Recipes table
+export const recipes = sqliteTable('recipes', {
+  id: text('id').primaryKey(),
+  menuItemId: text('menu_item_id').notNull().references(() => menuItems.id, { onDelete: 'cascade' }),
+  instructions: text('instructions'),
+  preparationTime: integer('preparation_time').notNull(), // minutes
+  servingSize: integer('serving_size').notNull().default(1),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+}, (table) => ({
+  menuItemIdx: index('recipe_menu_item_idx').on(table.menuItemId),
+  menuItemUnique: uniqueIndex('recipes_menu_item_id_unique').on(table.menuItemId),
+}));
+
+// Recipe ingredients table
+export const recipeIngredients = sqliteTable('recipe_ingredients', {
+  id: text('id').primaryKey(),
+  recipeId: text('recipe_id').notNull().references(() => recipes.id, { onDelete: 'cascade' }),
+  productId: text('product_id').notNull().references(() => products.id),
+  quantity: real('quantity').notNull(),
+  unit: text('unit').notNull(),
+  isOptional: integer('is_optional', { mode: 'boolean' }).notNull().default(false),
+  notes: text('notes'),
+  createdAt: integer('created_at').notNull(),
+}, (table) => ({
+  recipeIdx: index('recipe_ingredient_recipe_idx').on(table.recipeId),
+  productIdx: index('recipe_ingredient_product_idx').on(table.productId),
+  recipeProductUnique: uniqueIndex('recipe_ingredients_recipe_id_product_id_unique').on(table.recipeId, table.productId),
+}));
+
+// Orders table
+export const orders = sqliteTable('orders', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  orderNumber: text('order_number').notNull(),
+  state: text('state').notNull(),
+  tableNumber: text('table_number'),
+  waiterId: text('waiter_id').references(() => users.id),
+  locationId: text('location_id').notNull().references(() => locations.id),
+  totalAmount: integer('total_amount_cents').notNull().default(0),
+  subtotalAmount: integer('subtotal_amount_cents').notNull().default(0),
+  taxAmount: integer('tax_amount_cents').notNull().default(0),
+  specialInstructions: text('special_instructions'),
+  estimatedReadyTime: integer('estimated_ready_time'),
+  actualReadyTime: integer('actual_ready_time'),
+  version: integer('version').notNull().default(1), // for optimistic locking
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+}, (table) => ({
+  tenantIdx: index('order_tenant_idx').on(table.tenantId),
+  tenantStateIdx: index('order_tenant_state_idx').on(table.tenantId, table.state),
+  tenantLocationIdx: index('order_tenant_location_idx').on(table.tenantId, table.locationId),
+  waiterIdx: index('order_waiter_idx').on(table.waiterId),
+  locationIdx: index('order_location_idx').on(table.locationId),
+  stateIdx: index('order_state_idx').on(table.state),
+  createdAtIdx: index('order_created_at_idx').on(table.createdAt),
+  tenantOrderNumberUnique: uniqueIndex('orders_tenant_id_order_number_unique').on(table.tenantId, table.orderNumber),
+  stateCheck: check("state IN ('PLACED', 'PREPARING', 'READY', 'DELIVERED', 'CANCELLED')"),
+}));
+
+// Order items table
+export const orderItems = sqliteTable('order_items', {
+  id: text('id').primaryKey(),
+  orderId: text('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  menuItemId: text('menu_item_id').notNull().references(() => menuItems.id),
+  quantity: integer('quantity').notNull(),
+  unitPrice: integer('unit_price_cents').notNull(),
+  totalPrice: integer('total_price_cents').notNull(),
+  specialInstructions: text('special_instructions'),
+  status: text('status').notNull().default('PENDING'),
+  createdAt: integer('created_at').notNull(),
+}, (table) => ({
+  orderIdx: index('order_item_order_idx').on(table.orderId),
+  menuItemIdx: index('order_item_menu_item_idx').on(table.menuItemId),
+  statusIdx: index('order_item_status_idx').on(table.status),
+  statusCheck: check("status IN ('PENDING', 'PREPARING', 'READY', 'DELIVERED', 'CANCELLED')"),
+  quantityCheck: check('quantity > 0'),
+  unitPriceCheck: check('unit_price_cents >= 0'),
+  totalPriceCheck: check('total_price_cents >= 0'),
+}));
+
+// Order state transitions audit log
+export const orderStateTransitions = sqliteTable('order_state_transitions', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  orderId: text('order_id').notNull().references(() => orders.id),
+  fromState: text('from_state'),
+  toState: text('to_state').notNull(),
+  transitionedBy: text('transitioned_by').references(() => users.id),
+  transitionedAt: integer('transitioned_at').notNull(),
+  reason: text('reason'),
+  metadata: text('metadata'), // JSON object for additional data
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+}, (table) => ({
+  tenantIdx: index('order_transition_tenant_idx').on(table.tenantId),
+  orderIdx: index('order_transition_order_idx').on(table.orderId),
+  tenantOrderIdx: index('order_transition_tenant_order_idx').on(table.tenantId, table.orderId),
+  transitionedByIdx: index('order_transition_transitioned_by_idx').on(table.transitionedBy),
+  transitionedAtIdx: index('order_transition_transitioned_at_idx').on(table.transitionedAt),
+  fromStateIdx: index('order_transition_from_state_idx').on(table.fromState),
+  toStateIdx: index('order_transition_to_state_idx').on(table.toState),
+}));
+
+// Payments table
+export const payments = sqliteTable('payments', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  orderId: text('order_id').notNull().references(() => orders.id),
+  method: text('method').notNull(),
+  amount: integer('amount_cents').notNull(),
+  status: text('status').notNull(),
+  gatewayTransactionId: text('gateway_transaction_id'),
+  gatewayResponse: text('gateway_response'), // JSON object
+  processedBy: text('processed_by').references(() => users.id),
+  createdAt: integer('created_at').notNull(),
+  processedAt: integer('processed_at'),
+  failedAt: integer('failed_at'),
+  errorMessage: text('error_message'),
+}, (table) => ({
+  tenantIdx: index('payment_tenant_idx').on(table.tenantId),
+  orderIdx: index('payment_order_idx').on(table.orderId),
+  tenantOrderIdx: index('payment_tenant_order_idx').on(table.tenantId, table.orderId),
+  methodIdx: index('payment_method_idx').on(table.method),
+  statusIdx: index('payment_status_idx').on(table.status),
+  processedByIdx: index('payment_processed_by_idx').on(table.processedBy),
+  createdAtIdx: index('payment_created_at_idx').on(table.createdAt),
+  methodCheck: check("method IN ('PIX', 'CREDIT_CARD', 'DEBIT_CARD', 'MANUAL_CARD', 'CASH')"),
+  statusCheck: check("status IN ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'CANCELLED')"),
+  amountCheck: check('amount_cents > 0'),
+}));
+
+// Split payments table
+export const splitPayments = sqliteTable('split_payments', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  orderId: text('order_id').notNull().references(() => orders.id),
+  totalAmount: integer('total_amount_cents').notNull(),
+  paidAmount: integer('paid_amount_cents').notNull().default(0),
+  remainingAmount: integer('remaining_amount_cents').notNull(),
+  isComplete: integer('is_complete', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at').notNull(),
+  completedAt: integer('completed_at'),
+}, (table) => ({
+  tenantIdx: index('split_payment_tenant_idx').on(table.tenantId),
+  orderIdx: index('split_payment_order_idx').on(table.orderId),
+  tenantOrderIdx: index('split_payment_tenant_order_idx').on(table.tenantId, table.orderId),
+  isCompleteIdx: index('split_payment_is_complete_idx').on(table.isComplete),
+  orderUnique: uniqueIndex('split_payments_order_id_unique').on(table.orderId),
+  totalAmountCheck: check('total_amount_cents > 0'),
+  paidAmountCheck: check('paid_amount_cents >= 0'),
+  remainingAmountCheck: check('remaining_amount_cents >= 0'),
+}));
+
+// Commissions table
+export const commissions = sqliteTable('commissions', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  waiterId: text('waiter_id').notNull().references(() => users.id),
+  orderId: text('order_id').notNull().references(() => orders.id),
+  orderAmount: integer('order_amount_cents').notNull(),
+  commissionRate: real('commission_rate').notNull(),
+  commissionAmount: integer('commission_amount_cents').notNull(),
+  commissionType: text('commission_type').notNull(),
+  calculatedAt: integer('calculated_at').notNull(),
+  paidAt: integer('paid_at'),
+  notes: text('notes'),
+}, (table) => ({
+  tenantIdx: index('commission_tenant_idx').on(table.tenantId),
+  waiterIdx: index('commission_waiter_idx').on(table.waiterId),
+  orderIdx: index('commission_order_idx').on(table.orderId),
+  tenantWaiterIdx: index('commission_tenant_waiter_idx').on(table.tenantId, table.waiterId),
+  calculatedAtIdx: index('commission_calculated_at_idx').on(table.calculatedAt),
+  paidAtIdx: index('commission_paid_at_idx').on(table.paidAt),
+  orderUnique: uniqueIndex('commissions_order_id_unique').on(table.orderId),
+  commissionTypeCheck: check("commission_type IN ('PERCENTAGE', 'FIXED_VALUE')"),
+  orderAmountCheck: check('order_amount_cents > 0'),
+  commissionRateCheck: check('commission_rate >= 0'),
+  commissionAmountCheck: check('commission_amount_cents >= 0'),
+}));
+
+// Commission configurations table
+export const commissionConfigs = sqliteTable('commission_configs', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  defaultType: text('default_type').notNull(),
+  defaultRate: real('default_rate').notNull(),
+  menuItemId: text('menu_item_id').references(() => menuItems.id),
+  itemSpecificType: text('item_specific_type'),
+  itemSpecificRate: real('item_specific_rate'),
+  active: integer('active', { mode: 'boolean' }).notNull().default(true),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+}, (table) => ({
+  tenantIdx: index('commission_config_tenant_idx').on(table.tenantId),
+  menuItemIdx: index('commission_config_menu_item_idx').on(table.menuItemId),
+  activeIdx: index('commission_config_active_idx').on(table.active),
+  tenantMenuItemUnique: uniqueIndex('commission_configs_tenant_id_menu_item_id_unique').on(table.tenantId, table.menuItemId),
+  defaultTypeCheck: check("default_type IN ('PERCENTAGE', 'FIXED_VALUE')"),
+  itemSpecificTypeCheck: check("item_specific_type IN ('PERCENTAGE', 'FIXED_VALUE') OR item_specific_type IS NULL"),
+  defaultRateCheck: check('default_rate >= 0'),
+  itemSpecificRateCheck: check('item_specific_rate >= 0 OR item_specific_rate IS NULL'),
+}));
+
+// Payment gateway configurations table
+export const paymentGatewayConfigs = sqliteTable('payment_gateway_configs', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  provider: text('provider').notNull(),
+  accessToken: text('access_token').notNull(), // encrypted
+  publicKey: text('public_key').notNull(),
+  webhookUrl: text('webhook_url'),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+}, (table) => ({
+  tenantIdx: index('payment_gateway_config_tenant_idx').on(table.tenantId),
+  providerIdx: index('payment_gateway_config_provider_idx').on(table.provider),
+  isActiveIdx: index('payment_gateway_config_is_active_idx').on(table.isActive),
+  tenantProviderUnique: uniqueIndex('payment_gateway_configs_tenant_id_provider_unique').on(table.tenantId, table.provider),
+  providerCheck: check("provider IN ('MERCADO_PAGO')"),
+}));
+
+// Inventory consumption log table
+export const inventoryConsumptions = sqliteTable('inventory_consumptions', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  orderId: text('order_id').notNull().references(() => orders.id),
+  productId: text('product_id').notNull().references(() => products.id),
+  locationId: text('location_id').notNull().references(() => locations.id),
+  quantityConsumed: real('quantity_consumed').notNull(),
+  unit: text('unit').notNull(),
+  consumedAt: integer('consumed_at').notNull(),
+  reversedAt: integer('reversed_at'), // if order was cancelled
+  reversedBy: text('reversed_by').references(() => users.id),
+  notes: text('notes'),
+}, (table) => ({
+  tenantIdx: index('inventory_consumption_tenant_idx').on(table.tenantId),
+  orderIdx: index('inventory_consumption_order_idx').on(table.orderId),
+  productIdx: index('inventory_consumption_product_idx').on(table.productId),
+  locationIdx: index('inventory_consumption_location_idx').on(table.locationId),
+  tenantOrderIdx: index('inventory_consumption_tenant_order_idx').on(table.tenantId, table.orderId),
+  consumedAtIdx: index('inventory_consumption_consumed_at_idx').on(table.consumedAt),
+  reversedAtIdx: index('inventory_consumption_reversed_at_idx').on(table.reversedAt),
+  quantityConsumedCheck: check('quantity_consumed > 0'),
+}));
+
+// Digital Menu System Relations
+export const menuItemsRelations = relations(menuItems, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [menuItems.tenantId],
+    references: [tenants.id],
+  }),
+  category: one(categories, {
+    fields: [menuItems.categoryId],
+    references: [categories.id],
+  }),
+  recipe: one(recipes),
+  orderItems: many(orderItems),
+  commissionConfigs: many(commissionConfigs),
+}));
+
+export const recipesRelations = relations(recipes, ({ one, many }) => ({
+  menuItem: one(menuItems, {
+    fields: [recipes.menuItemId],
+    references: [menuItems.id],
+  }),
+  ingredients: many(recipeIngredients),
+}));
+
+export const recipeIngredientsRelations = relations(recipeIngredients, ({ one }) => ({
+  recipe: one(recipes, {
+    fields: [recipeIngredients.recipeId],
+    references: [recipes.id],
+  }),
+  product: one(products, {
+    fields: [recipeIngredients.productId],
+    references: [products.id],
+  }),
+}));
+
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [orders.tenantId],
+    references: [tenants.id],
+  }),
+  waiter: one(users, {
+    fields: [orders.waiterId],
+    references: [users.id],
+  }),
+  location: one(locations, {
+    fields: [orders.locationId],
+    references: [locations.id],
+  }),
+  items: many(orderItems),
+  stateTransitions: many(orderStateTransitions),
+  payments: many(payments),
+  splitPayment: one(splitPayments),
+  commission: one(commissions),
+  inventoryConsumptions: many(inventoryConsumptions),
+}));
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
+  }),
+  menuItem: one(menuItems, {
+    fields: [orderItems.menuItemId],
+    references: [menuItems.id],
+  }),
+}));
+
+export const orderStateTransitionsRelations = relations(orderStateTransitions, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [orderStateTransitions.tenantId],
+    references: [tenants.id],
+  }),
+  order: one(orders, {
+    fields: [orderStateTransitions.orderId],
+    references: [orders.id],
+  }),
+  transitionedByUser: one(users, {
+    fields: [orderStateTransitions.transitionedBy],
+    references: [users.id],
+  }),
+}));
+
+export const paymentsRelations = relations(payments, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [payments.tenantId],
+    references: [tenants.id],
+  }),
+  order: one(orders, {
+    fields: [payments.orderId],
+    references: [orders.id],
+  }),
+  processedByUser: one(users, {
+    fields: [payments.processedBy],
+    references: [users.id],
+  }),
+}));
+
+export const splitPaymentsRelations = relations(splitPayments, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [splitPayments.tenantId],
+    references: [tenants.id],
+  }),
+  order: one(orders, {
+    fields: [splitPayments.orderId],
+    references: [orders.id],
+  }),
+}));
+
+export const commissionsRelations = relations(commissions, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [commissions.tenantId],
+    references: [tenants.id],
+  }),
+  waiter: one(users, {
+    fields: [commissions.waiterId],
+    references: [users.id],
+  }),
+  order: one(orders, {
+    fields: [commissions.orderId],
+    references: [orders.id],
+  }),
+}));
+
+export const commissionConfigsRelations = relations(commissionConfigs, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [commissionConfigs.tenantId],
+    references: [tenants.id],
+  }),
+  menuItem: one(menuItems, {
+    fields: [commissionConfigs.menuItemId],
+    references: [menuItems.id],
+  }),
+}));
+
+export const paymentGatewayConfigsRelations = relations(paymentGatewayConfigs, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [paymentGatewayConfigs.tenantId],
+    references: [tenants.id],
+  }),
+}));
+
+export const inventoryConsumptionsRelations = relations(inventoryConsumptions, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [inventoryConsumptions.tenantId],
+    references: [tenants.id],
+  }),
+  order: one(orders, {
+    fields: [inventoryConsumptions.orderId],
+    references: [orders.id],
+  }),
+  product: one(products, {
+    fields: [inventoryConsumptions.productId],
+    references: [products.id],
+  }),
+  location: one(locations, {
+    fields: [inventoryConsumptions.locationId],
+    references: [locations.id],
+  }),
+  reversedByUser: one(users, {
+    fields: [inventoryConsumptions.reversedBy],
+    references: [users.id],
+  }),
+}));
+
+// Stock alert configurations table
+export const stockAlertConfigs = sqliteTable('stock_alert_configs', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  productId: text('product_id').notNull().references(() => products.id),
+  locationId: text('location_id').notNull().references(() => locations.id),
+  lowStockThreshold: integer('low_stock_threshold').notNull(),
+  criticalStockThreshold: integer('critical_stock_threshold').notNull(),
+  outOfStockThreshold: integer('out_of_stock_threshold').notNull().default(0),
+  alertEnabled: integer('alert_enabled', { mode: 'boolean' }).notNull().default(true),
+  emailNotifications: integer('email_notifications', { mode: 'boolean' }).notNull().default(true),
+  smsNotifications: integer('sms_notifications', { mode: 'boolean' }).notNull().default(false),
+  createdBy: text('created_by').notNull().references(() => users.id),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+}, (table) => ({
+  tenantIdx: index('stock_alert_config_tenant_idx').on(table.tenantId),
+  productIdx: index('stock_alert_config_product_idx').on(table.productId),
+  locationIdx: index('stock_alert_config_location_idx').on(table.locationId),
+  tenantProductLocationIdx: index('stock_alert_config_tenant_product_location_idx').on(table.tenantId, table.productId, table.locationId),
+  alertEnabledIdx: index('stock_alert_config_alert_enabled_idx').on(table.alertEnabled),
+  tenantProductLocationUnique: uniqueIndex('stock_alert_configs_tenant_id_product_id_location_id_unique').on(table.tenantId, table.productId, table.locationId),
+  lowStockCheck: check('low_stock_threshold >= critical_stock_threshold'),
+  criticalStockCheck: check('critical_stock_threshold >= out_of_stock_threshold'),
+  outOfStockCheck: check('out_of_stock_threshold >= 0'),
+}));
+
+// Stock alerts table
+export const stockAlerts = sqliteTable('stock_alerts', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  productId: text('product_id').notNull().references(() => products.id),
+  locationId: text('location_id').notNull().references(() => locations.id),
+  alertType: text('alert_type').notNull(),
+  currentStock: integer('current_stock').notNull(),
+  threshold: integer('threshold').notNull(),
+  severity: text('severity').notNull(),
+  message: text('message').notNull(),
+  acknowledged: integer('acknowledged', { mode: 'boolean' }).notNull().default(false),
+  acknowledgedBy: text('acknowledged_by').references(() => users.id),
+  acknowledgedAt: integer('acknowledged_at'),
+  resolved: integer('resolved', { mode: 'boolean' }).notNull().default(false),
+  resolvedAt: integer('resolved_at'),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+}, (table) => ({
+  tenantIdx: index('stock_alert_tenant_idx').on(table.tenantId),
+  productIdx: index('stock_alert_product_idx').on(table.productId),
+  locationIdx: index('stock_alert_location_idx').on(table.locationId),
+  tenantProductLocationIdx: index('stock_alert_tenant_product_location_idx').on(table.tenantId, table.productId, table.locationId),
+  alertTypeIdx: index('stock_alert_alert_type_idx').on(table.alertType),
+  severityIdx: index('stock_alert_severity_idx').on(table.severity),
+  acknowledgedIdx: index('stock_alert_acknowledged_idx').on(table.acknowledged),
+  resolvedIdx: index('stock_alert_resolved_idx').on(table.resolved),
+  createdAtIdx: index('stock_alert_created_at_idx').on(table.createdAt),
+  tenantUnresolvedIdx: index('stock_alert_tenant_unresolved_idx').on(table.tenantId, table.resolved),
+  alertTypeCheck: check("alert_type IN ('LOW_STOCK', 'CRITICAL_STOCK', 'OUT_OF_STOCK')"),
+  severityCheck: check("severity IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')"),
+  currentStockCheck: check('current_stock >= 0'),
+  thresholdCheck: check('threshold >= 0'),
+}));
+
+// Stock alert notifications table
+export const stockAlertNotifications = sqliteTable('stock_alert_notifications', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  alertId: text('alert_id').notNull().references(() => stockAlerts.id, { onDelete: 'cascade' }),
+  notificationType: text('notification_type').notNull(),
+  recipient: text('recipient').notNull(),
+  status: text('status').notNull(),
+  sentAt: integer('sent_at'),
+  deliveredAt: integer('delivered_at'),
+  failedAt: integer('failed_at'),
+  errorMessage: text('error_message'),
+  retryCount: integer('retry_count').notNull().default(0),
+  createdAt: integer('created_at').notNull(),
+}, (table) => ({
+  tenantIdx: index('stock_alert_notification_tenant_idx').on(table.tenantId),
+  alertIdx: index('stock_alert_notification_alert_idx').on(table.alertId),
+  typeIdx: index('stock_alert_notification_type_idx').on(table.notificationType),
+  statusIdx: index('stock_alert_notification_status_idx').on(table.status),
+  sentAtIdx: index('stock_alert_notification_sent_at_idx').on(table.sentAt),
+  typeCheck: check("notification_type IN ('EMAIL', 'SMS', 'PUSH', 'WEBHOOK')"),
+  statusCheck: check("status IN ('PENDING', 'SENT', 'DELIVERED', 'FAILED', 'CANCELLED')"),
+  retryCountCheck: check('retry_count >= 0'),
+}));
+
+// Stock alert relations
+export const stockAlertConfigsRelations = relations(stockAlertConfigs, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [stockAlertConfigs.tenantId],
+    references: [tenants.id],
+  }),
+  product: one(products, {
+    fields: [stockAlertConfigs.productId],
+    references: [products.id],
+  }),
+  location: one(locations, {
+    fields: [stockAlertConfigs.locationId],
+    references: [locations.id],
+  }),
+  createdByUser: one(users, {
+    fields: [stockAlertConfigs.createdBy],
+    references: [users.id],
+  }),
+  alerts: many(stockAlerts),
+}));
+
+export const stockAlertsRelations = relations(stockAlerts, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [stockAlerts.tenantId],
+    references: [tenants.id],
+  }),
+  product: one(products, {
+    fields: [stockAlerts.productId],
+    references: [products.id],
+  }),
+  location: one(locations, {
+    fields: [stockAlerts.locationId],
+    references: [locations.id],
+  }),
+  acknowledgedByUser: one(users, {
+    fields: [stockAlerts.acknowledgedBy],
+    references: [users.id],
+  }),
+  notifications: many(stockAlertNotifications),
+}));
+
+export const stockAlertNotificationsRelations = relations(stockAlertNotifications, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [stockAlertNotifications.tenantId],
+    references: [tenants.id],
+  }),
+  alert: one(stockAlerts, {
+    fields: [stockAlertNotifications.alertId],
+    references: [stockAlerts.id],
+  }),
+}));
+
+// Comprehensive audit logs table for all system operations
+export const auditLogs = sqliteTable('audit_logs', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  entityType: text('entity_type').notNull(), // 'order', 'payment', 'inventory', etc.
+  entityId: text('entity_id').notNull(),
+  action: text('action').notNull(), // 'CREATE', 'UPDATE', 'DELETE', 'STATE_CHANGE', etc.
+  oldValue: text('old_value'), // JSON string of old values
+  newValue: text('new_value'), // JSON string of new values
+  userId: text('user_id').references(() => users.id),
+  userType: text('user_type').notNull(), // 'waiter', 'kitchen', 'cashier', 'manager', 'system'
+  timestamp: integer('timestamp').notNull(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  metadata: text('metadata'), // JSON string for additional context
+}, (table) => ({
+  tenantIdx: index('audit_log_tenant_idx').on(table.tenantId),
+  entityTypeIdx: index('audit_log_entity_type_idx').on(table.entityType),
+  entityIdIdx: index('audit_log_entity_id_idx').on(table.entityId),
+  tenantEntityIdx: index('audit_log_tenant_entity_idx').on(table.tenantId, table.entityType, table.entityId),
+  actionIdx: index('audit_log_action_idx').on(table.action),
+  userIdIdx: index('audit_log_user_id_idx').on(table.userId),
+  userTypeIdx: index('audit_log_user_type_idx').on(table.userType),
+  timestampIdx: index('audit_log_timestamp_idx').on(table.timestamp),
+  tenantTimestampIdx: index('audit_log_tenant_timestamp_idx').on(table.tenantId, table.timestamp),
+  userTypeCheck: check("user_type IN ('waiter', 'kitchen', 'cashier', 'manager', 'system', 'customer')"),
+}));
+
+// Audit logs relations
+export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [auditLogs.tenantId],
+    references: [tenants.id],
+  }),
+  user: one(users, {
+    fields: [auditLogs.userId],
+    references: [users.id],
   }),
 }));
