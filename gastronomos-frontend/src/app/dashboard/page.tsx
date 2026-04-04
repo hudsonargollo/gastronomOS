@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { MainLayout } from '@/components/layout/main-layout';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { ActivityFeed } from '@/components/dashboard/activity-feed';
+import { PanelQuicklinks } from '@/components/dashboard/panel-quicklinks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -170,6 +171,9 @@ export default function DashboardPage() {
             </motion.div>
           ))}
         </div>
+
+        {/* Panel Quicklinks */}
+        <PanelQuicklinks />
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
