@@ -1,4 +1,4 @@
-name = "gastronomos"
+name = "gastronomos-frontend"
 main = "src/frontend-worker-minimal.ts"
 compatibility_date = "2024-01-01"
 
@@ -6,7 +6,7 @@ compatibility_date = "2024-01-01"
 bucket = "./gastronomos-frontend/out"
 
 [env.production]
-name = "gastronomos"
+name = "gastronomos-frontend"
 vars = { ENVIRONMENT = "production" }
 routes = [
   { pattern = "gastronomos.clubemkt.digital/*", zone_name = "clubemkt.digital" }
