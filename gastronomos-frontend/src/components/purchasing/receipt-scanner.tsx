@@ -2,9 +2,8 @@
 
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { BentoBox, BentoItem } from '@/components/design-system/layouts/bento-box';
+import { useTheme } from '@/contexts/theme-context';
 import {
   Upload,
   Camera,
@@ -13,7 +12,6 @@ import {
   AlertCircle,
   Loader,
   Eye,
-  Download,
 } from 'lucide-react';
 
 interface ExtractedPurchaseData {
@@ -36,6 +34,7 @@ interface ReceiptScannerProps {
 }
 
 export function ReceiptScanner({ onDataExtracted, onClose }: ReceiptScannerProps) {
+  const { palette } = useTheme();
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedPurchaseData | null>(null);
@@ -127,80 +126,82 @@ export function ReceiptScanner({ onDataExtracted, onClose }: ReceiptScannerProps
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="border-2 border-dashed border-slate-300 hover:border-slate-400 transition-colors">
-        <CardHeader className="pb-3">
+      <BentoItem variant="elevated" span={2}>
+        <div className="space-y-4">
+          {/* Header */}
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center space-x-2">
-              <Camera className="h-5 w-5 text-orange-500" />
-              <span>Receipt Scanner</span>
-            </CardTitle>
+            <div>
+              <h3 className="text-lg font-bold" style={{ color: palette.text }}>
+                📸 Receipt Scanner
+              </h3>
+              <p className="text-sm mt-1" style={{ color: palette.textSecondary }}>
+                Upload a photo of your receipt or nota fiscal
+              </p>
+            </div>
             {onClose && (
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={onClose}
-                className="h-8 w-8 p-0"
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
               >
-                <X className="h-4 w-4" />
-              </Button>
+                <X className="h-5 w-5" style={{ color: palette.text }} />
+              </button>
             )}
           </div>
-          <p className="text-sm text-slate-500 mt-1">
-            Upload a photo of your receipt or nota fiscal to automatically extract purchase information
-          </p>
-        </CardHeader>
 
-        <CardContent className="space-y-4">
           {/* Upload Area */}
           {!image && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="space-y-3"
+              className="grid grid-cols-2 gap-3"
             >
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  onClick={handleUploadClick}
-                  variant="outline"
-                  className="h-24 flex flex-col items-center justify-center space-y-2 hover:bg-blue-50 hover:border-blue-300 transition-colors"
-                >
-                  <Upload className="h-6 w-6 text-blue-500" />
-                  <span className="text-sm font-medium">Upload Photo</span>
-                </Button>
+              <button
+                onClick={handleUploadClick}
+                className="p-6 rounded-lg border-2 border-dashed transition-all hover:shadow-md"
+                style={{
+                  borderColor: palette.accent,
+                  backgroundColor: `${palette.accent}10`,
+                }}
+              >
+                <Upload className="h-6 w-6 mx-auto mb-2" style={{ color: palette.accent }} />
+                <p className="text-sm font-medium" style={{ color: palette.text }}>
+                  Upload Photo
+                </p>
+              </button>
 
-                <Button
-                  onClick={handleCameraClick}
-                  variant="outline"
-                  className="h-24 flex flex-col items-center justify-center space-y-2 hover:bg-green-50 hover:border-green-300 transition-colors"
-                >
-                  <Camera className="h-6 w-6 text-green-500" />
-                  <span className="text-sm font-medium">Take Photo</span>
-                </Button>
-              </div>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-
-              <p className="text-xs text-slate-400 text-center">
-                Supported formats: JPG, PNG, WebP (Max 10MB)
-              </p>
+              <button
+                onClick={handleCameraClick}
+                className="p-6 rounded-lg border-2 border-dashed transition-all hover:shadow-md"
+                style={{
+                  borderColor: palette.primary,
+                  backgroundColor: `${palette.primary}10`,
+                }}
+              >
+                <Camera className="h-6 w-6 mx-auto mb-2" style={{ color: palette.primary }} />
+                <p className="text-sm font-medium" style={{ color: palette.text }}>
+                  Take Photo
+                </p>
+              </button>
             </motion.div>
           )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleFileChange}
+            className="hidden"
+          />
 
           {/* Loading State */}
           <AnimatePresence>
@@ -211,12 +212,9 @@ export function ReceiptScanner({ onDataExtracted, onClose }: ReceiptScannerProps
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center justify-center py-8 space-y-3"
               >
-                <Loader className="h-8 w-8 text-orange-500 animate-spin" />
-                <p className="text-sm font-medium text-slate-600">
+                <Loader className="h-8 w-8 animate-spin" style={{ color: palette.accent }} />
+                <p className="text-sm font-medium" style={{ color: palette.text }}>
                   Scanning receipt...
-                </p>
-                <p className="text-xs text-slate-500">
-                  Using AI to extract purchase information
                 </p>
               </motion.div>
             )}
@@ -229,12 +227,20 @@ export function ReceiptScanner({ onDataExtracted, onClose }: ReceiptScannerProps
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start space-x-3"
+                className="p-3 rounded-lg flex items-start space-x-3"
+                style={{
+                  backgroundColor: `${palette.accent}20`,
+                  borderLeft: `4px solid ${palette.accent}`,
+                }}
               >
-                <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-red-900">Error</p>
-                  <p className="text-sm text-red-700 mt-1">{error}</p>
+                <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: palette.accent }} />
+                <div>
+                  <p className="text-sm font-medium" style={{ color: palette.text }}>
+                    Error
+                  </p>
+                  <p className="text-sm mt-1" style={{ color: palette.textSecondary }}>
+                    {error}
+                  </p>
                 </div>
               </motion.div>
             )}
@@ -247,23 +253,21 @@ export function ReceiptScanner({ onDataExtracted, onClose }: ReceiptScannerProps
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="space-y-3"
+                className="relative rounded-lg overflow-hidden"
+                style={{ backgroundColor: palette.surface }}
               >
-                <div className="relative bg-slate-100 rounded-lg overflow-hidden">
-                  <img
-                    src={image}
-                    alt="Receipt preview"
-                    className="w-full h-48 object-cover"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPreviewOpen(true)}
-                    className="absolute top-2 right-2 bg-white/80 hover:bg-white"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </div>
+                <img
+                  src={image}
+                  alt="Receipt preview"
+                  className="w-full h-48 object-cover"
+                />
+                <button
+                  onClick={() => setPreviewOpen(true)}
+                  className="absolute top-2 right-2 p-2 rounded-lg transition-all hover:shadow-md"
+                  style={{ backgroundColor: `${palette.surface}cc` }}
+                >
+                  <Eye className="h-4 w-4" style={{ color: palette.text }} />
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
@@ -275,23 +279,35 @@ export function ReceiptScanner({ onDataExtracted, onClose }: ReceiptScannerProps
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="space-y-3 bg-green-50 border border-green-200 rounded-lg p-4"
+                className="p-4 rounded-lg space-y-3"
+                style={{
+                  backgroundColor: `${palette.primary}15`,
+                  borderLeft: `4px solid ${palette.primary}`,
+                }}
               >
                 <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <p className="font-medium text-green-900">Data Extracted Successfully</p>
+                  <CheckCircle className="h-5 w-5" style={{ color: palette.primary }} />
+                  <p className="font-medium" style={{ color: palette.text }}>
+                    Data Extracted Successfully
+                  </p>
                   {extractedData.confidence && (
-                    <Badge variant="secondary" className="ml-auto">
-                      {Math.round(extractedData.confidence * 100)}% confidence
-                    </Badge>
+                    <span
+                      className="ml-auto text-xs font-semibold px-2 py-1 rounded"
+                      style={{
+                        backgroundColor: palette.accent,
+                        color: palette.surface,
+                      }}
+                    >
+                      {Math.round(extractedData.confidence * 100)}%
+                    </span>
                   )}
                 </div>
 
                 <div className="space-y-2 text-sm">
                   {extractedData.invoiceNumber && (
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Invoice #:</span>
-                      <span className="font-medium text-slate-900">
+                      <span style={{ color: palette.textSecondary }}>Invoice #:</span>
+                      <span style={{ color: palette.text }} className="font-medium">
                         {extractedData.invoiceNumber}
                       </span>
                     </div>
@@ -299,8 +315,8 @@ export function ReceiptScanner({ onDataExtracted, onClose }: ReceiptScannerProps
 
                   {extractedData.supplier && (
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Supplier:</span>
-                      <span className="font-medium text-slate-900">
+                      <span style={{ color: palette.textSecondary }}>Supplier:</span>
+                      <span style={{ color: palette.text }} className="font-medium">
                         {extractedData.supplier}
                       </span>
                     </div>
@@ -308,45 +324,27 @@ export function ReceiptScanner({ onDataExtracted, onClose }: ReceiptScannerProps
 
                   {extractedData.date && (
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Date:</span>
-                      <span className="font-medium text-slate-900">
+                      <span style={{ color: palette.textSecondary }}>Date:</span>
+                      <span style={{ color: palette.text }} className="font-medium">
                         {new Date(extractedData.date).toLocaleDateString()}
                       </span>
                     </div>
                   )}
 
                   {extractedData.totalAmount && (
-                    <div className="flex justify-between pt-2 border-t border-green-200">
-                      <span className="text-slate-600 font-medium">Total:</span>
-                      <span className="font-bold text-green-700">
+                    <div
+                      className="flex justify-between pt-2 mt-2"
+                      style={{ borderTopColor: palette.accent, borderTopWidth: '1px' }}
+                    >
+                      <span style={{ color: palette.textSecondary }} className="font-medium">
+                        Total:
+                      </span>
+                      <span style={{ color: palette.primary }} className="font-bold text-lg">
                         R$ {extractedData.totalAmount.toFixed(2)}
                       </span>
                     </div>
                   )}
                 </div>
-
-                {extractedData.items && extractedData.items.length > 0 && (
-                  <div className="pt-2 border-t border-green-200">
-                    <p className="text-xs font-medium text-slate-600 mb-2">
-                      Items ({extractedData.items.length})
-                    </p>
-                    <div className="space-y-1 max-h-32 overflow-y-auto">
-                      {extractedData.items.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="text-xs flex justify-between bg-white/50 p-2 rounded"
-                        >
-                          <span className="text-slate-700 flex-1 truncate">
-                            {item.description}
-                          </span>
-                          <span className="text-slate-600 ml-2">
-                            {item.quantity}x R$ {item.unitPrice.toFixed(2)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -354,31 +352,37 @@ export function ReceiptScanner({ onDataExtracted, onClose }: ReceiptScannerProps
           {/* Action Buttons */}
           {image && (
             <div className="flex gap-2 pt-2">
-              <Button
-                variant="outline"
+              <button
                 onClick={resetScanner}
-                className="flex-1"
+                className="flex-1 px-4 py-2 rounded-lg font-medium transition-all hover:shadow-md"
+                style={{
+                  backgroundColor: palette.surface,
+                  color: palette.text,
+                  border: `1px solid ${palette.accent}`,
+                }}
               >
-                <X className="h-4 w-4 mr-2" />
                 Clear
-              </Button>
+              </button>
               {extractedData && (
-                <Button
+                <button
                   onClick={() => {
                     if (onDataExtracted) {
                       onDataExtracted(extractedData);
                     }
                   }}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  className="flex-1 px-4 py-2 rounded-lg font-medium transition-all hover:shadow-md"
+                  style={{
+                    backgroundColor: palette.primary,
+                    color: palette.surface,
+                  }}
                 >
-                  <CheckCircle className="h-4 w-4 mr-2" />
                   Use Data
-                </Button>
+                </button>
               )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </BentoItem>
 
       {/* Full Image Preview Modal */}
       <AnimatePresence>
@@ -395,18 +399,22 @@ export function ReceiptScanner({ onDataExtracted, onClose }: ReceiptScannerProps
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-auto"
+              className="rounded-lg max-w-2xl w-full max-h-[80vh] overflow-auto"
+              style={{ backgroundColor: palette.surface }}
             >
-              <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
-                <h3 className="font-semibold">Receipt Preview</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
+              <div
+                className="sticky top-0 p-4 flex items-center justify-between border-b"
+                style={{ borderBottomColor: palette.accent }}
+              >
+                <h3 className="font-semibold" style={{ color: palette.text }}>
+                  Receipt Preview
+                </h3>
+                <button
                   onClick={() => setPreviewOpen(false)}
-                  className="h-8 w-8 p-0"
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                 >
-                  <X className="h-4 w-4" />
-                </Button>
+                  <X className="h-4 w-4" style={{ color: palette.text }} />
+                </button>
               </div>
               <div className="p-4">
                 <img src={image} alt="Receipt full preview" className="w-full" />

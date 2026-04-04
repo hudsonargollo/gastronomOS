@@ -2,10 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ReceiptScanner } from './receipt-scanner';
+import { BentoBox, BentoItem } from '@/components/design-system/layouts/bento-box';
+import { useTheme } from '@/contexts/theme-context';
 import {
   Plus,
   Trash2,
@@ -14,6 +12,7 @@ import {
   ChevronDown,
   AlertCircle,
 } from 'lucide-react';
+import { ReceiptScanner } from './receipt-scanner';
 
 interface PurchaseItem {
   id: string;
@@ -29,6 +28,7 @@ interface PurchaseOrderFormProps {
 }
 
 export function PurchaseOrderForm({ onSubmit, initialData }: PurchaseOrderFormProps) {
+  const { palette } = useTheme();
   const [showScanner, setShowScanner] = useState(false);
   const [supplier, setSupplier] = useState(initialData?.supplier || '');
   const [invoiceNumber, setInvoiceNumber] = useState(initialData?.invoiceNumber || '');
@@ -106,6 +106,12 @@ export function PurchaseOrderForm({ onSubmit, initialData }: PurchaseOrderFormPr
     }
   };
 
+  const inputStyle = {
+    backgroundColor: palette.surface,
+    color: palette.text,
+    borderColor: palette.accent,
+  };
+
   return (
     <div className="space-y-4">
       {/* Receipt Scanner */}
@@ -118,84 +124,112 @@ export function PurchaseOrderForm({ onSubmit, initialData }: PurchaseOrderFormPr
         )}
       </AnimatePresence>
 
-      {/* Form Card */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle>Purchase Order Details</CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowScanner(!showScanner)}
-              className="text-orange-600 border-orange-200 hover:bg-orange-50"
-            >
-              📸 Scan Receipt
-            </Button>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          {/* Supplier and Invoice Info */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Supplier *
-              </label>
-              <input
-                type="text"
-                value={supplier}
-                onChange={(e) => setSupplier(e.target.value)}
-                placeholder="Enter supplier name"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Invoice Number
-              </label>
-              <input
-                type="text"
-                value={invoiceNumber}
-                onChange={(e) => setInvoiceNumber(e.target.value)}
-                placeholder="NF-000001"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Date *
-              </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
-          </div>
-
-          {/* Items Section */}
-          <div className="border-t pt-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-slate-900">Items</h3>
-              <Button
-                onClick={handleAddItem}
-                size="sm"
-                variant="outline"
-                className="text-green-600 border-green-200 hover:bg-green-50"
+      {/* Form */}
+      <BentoBox columns={3} gap="md">
+        {/* Supplier Info */}
+        <BentoItem span={2} variant="elevated">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold" style={{ color: palette.text }}>
+                Purchase Order Details
+              </h3>
+              <button
+                onClick={() => setShowScanner(!showScanner)}
+                className="px-3 py-1 rounded-lg text-sm font-medium transition-all hover:shadow-md"
+                style={{
+                  backgroundColor: `${palette.accent}20`,
+                  color: palette.accent,
+                }}
               >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Item
-              </Button>
+                📸 Scan Receipt
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1" style={{ color: palette.text }}>
+                  Supplier *
+                </label>
+                <input
+                  type="text"
+                  value={supplier}
+                  onChange={(e) => setSupplier(e.target.value)}
+                  placeholder="Enter supplier name"
+                  className="w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 transition-all"
+                  style={{
+                    ...inputStyle,
+                    borderWidth: '1px',
+                    focusRingColor: palette.accent,
+                  }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1" style={{ color: palette.text }}>
+                  Invoice Number
+                </label>
+                <input
+                  type="text"
+                  value={invoiceNumber}
+                  onChange={(e) => setInvoiceNumber(e.target.value)}
+                  placeholder="NF-000001"
+                  className="w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 transition-all"
+                  style={{
+                    ...inputStyle,
+                    borderWidth: '1px',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1" style={{ color: palette.text }}>
+                  Date *
+                </label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 transition-all"
+                  style={{
+                    ...inputStyle,
+                    borderWidth: '1px',
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </BentoItem>
+
+        {/* Items Section */}
+        <BentoItem span={3} variant="elevated">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold" style={{ color: palette.text }}>
+                Items
+              </h3>
+              <button
+                onClick={handleAddItem}
+                className="px-3 py-1 rounded-lg text-sm font-medium transition-all hover:shadow-md flex items-center space-x-1"
+                style={{
+                  backgroundColor: `${palette.primary}20`,
+                  color: palette.primary,
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Item</span>
+              </button>
             </div>
 
             {items.length === 0 ? (
-              <div className="bg-slate-50 rounded-lg p-6 text-center">
-                <AlertCircle className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                <p className="text-slate-600">No items added yet</p>
-                <p className="text-sm text-slate-500">
+              <div
+                className="rounded-lg p-6 text-center"
+                style={{ backgroundColor: `${palette.accent}10` }}
+              >
+                <AlertCircle className="h-8 w-8 mx-auto mb-2" style={{ color: palette.accent }} />
+                <p style={{ color: palette.text }} className="font-medium">
+                  No items added yet
+                </p>
+                <p style={{ color: palette.textSecondary }} className="text-sm">
                   Add items manually or scan a receipt to auto-fill
                 </p>
               </div>
@@ -208,7 +242,10 @@ export function PurchaseOrderForm({ onSubmit, initialData }: PurchaseOrderFormPr
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
-                    <div className="border border-slate-200 rounded-lg overflow-hidden">
+                    <div
+                      className="rounded-lg overflow-hidden border"
+                      style={{ borderColor: palette.accent }}
+                    >
                       <button
                         onClick={() => {
                           const newExpanded = new Set(expandedItems);
@@ -219,21 +256,26 @@ export function PurchaseOrderForm({ onSubmit, initialData }: PurchaseOrderFormPr
                           }
                           setExpandedItems(newExpanded);
                         }}
-                        className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                        className="w-full px-4 py-3 flex items-center justify-between transition-colors"
+                        style={{
+                          backgroundColor: palette.surface,
+                          color: palette.text,
+                        }}
                       >
                         <div className="flex-1 text-left">
-                          <p className="font-medium text-slate-900 truncate">
+                          <p className="font-medium">
                             {item.description || 'Untitled Item'}
                           </p>
-                          <p className="text-sm text-slate-500">
+                          <p style={{ color: palette.textSecondary }} className="text-sm">
                             {item.quantity} × R$ {item.unitPrice.toFixed(2)} = R${' '}
                             {item.totalPrice.toFixed(2)}
                           </p>
                         </div>
                         <ChevronDown
-                          className={`h-5 w-5 text-slate-400 transition-transform ${
+                          className={`h-5 w-5 transition-transform ${
                             expandedItems.has(item.id) ? 'rotate-180' : ''
                           }`}
+                          style={{ color: palette.textSecondary }}
                         />
                       </button>
 
@@ -243,10 +285,15 @@ export function PurchaseOrderForm({ onSubmit, initialData }: PurchaseOrderFormPr
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="border-t border-slate-200 bg-slate-50 p-4 space-y-3"
+                            className="p-4 space-y-3"
+                            style={{
+                              backgroundColor: `${palette.accent}08`,
+                              borderTopColor: palette.accent,
+                              borderTopWidth: '1px',
+                            }}
                           >
                             <div>
-                              <label className="block text-sm font-medium text-slate-700 mb-1">
+                              <label className="block text-sm font-medium mb-1" style={{ color: palette.text }}>
                                 Description
                               </label>
                               <input
@@ -256,13 +303,17 @@ export function PurchaseOrderForm({ onSubmit, initialData }: PurchaseOrderFormPr
                                   handleUpdateItem(item.id, 'description', e.target.value)
                                 }
                                 placeholder="Item description"
-                                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                className="w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 transition-all"
+                                style={{
+                                  ...inputStyle,
+                                  borderWidth: '1px',
+                                }}
                               />
                             </div>
 
                             <div className="grid grid-cols-3 gap-3">
                               <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                <label className="block text-sm font-medium mb-1" style={{ color: palette.text }}>
                                   Quantity
                                 </label>
                                 <input
@@ -277,12 +328,16 @@ export function PurchaseOrderForm({ onSubmit, initialData }: PurchaseOrderFormPr
                                   }
                                   min="0"
                                   step="0.01"
-                                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                  className="w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 transition-all"
+                                  style={{
+                                    ...inputStyle,
+                                    borderWidth: '1px',
+                                  }}
                                 />
                               </div>
 
                               <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                <label className="block text-sm font-medium mb-1" style={{ color: palette.text }}>
                                   Unit Price
                                 </label>
                                 <input
@@ -297,29 +352,42 @@ export function PurchaseOrderForm({ onSubmit, initialData }: PurchaseOrderFormPr
                                   }
                                   min="0"
                                   step="0.01"
-                                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                  className="w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 transition-all"
+                                  style={{
+                                    ...inputStyle,
+                                    borderWidth: '1px',
+                                  }}
                                 />
                               </div>
 
                               <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                <label className="block text-sm font-medium mb-1" style={{ color: palette.text }}>
                                   Total
                                 </label>
-                                <div className="px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 font-medium">
+                                <div
+                                  className="px-3 py-2 rounded-lg font-medium"
+                                  style={{
+                                    backgroundColor: palette.surface,
+                                    color: palette.primary,
+                                    border: `1px solid ${palette.accent}`,
+                                  }}
+                                >
                                   R$ {item.totalPrice.toFixed(2)}
                                 </div>
                               </div>
                             </div>
 
-                            <Button
+                            <button
                               onClick={() => handleRemoveItem(item.id)}
-                              variant="destructive"
-                              size="sm"
-                              className="w-full"
+                              className="w-full px-3 py-2 rounded-lg font-medium transition-all hover:shadow-md flex items-center justify-center space-x-2"
+                              style={{
+                                backgroundColor: `${palette.accent}20`,
+                                color: palette.accent,
+                              }}
                             >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Remove Item
-                            </Button>
+                              <Trash2 className="h-4 w-4" />
+                              <span>Remove Item</span>
+                            </button>
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -329,10 +397,12 @@ export function PurchaseOrderForm({ onSubmit, initialData }: PurchaseOrderFormPr
               </div>
             )}
           </div>
+        </BentoItem>
 
-          {/* Notes */}
-          <div className="border-t pt-4">
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+        {/* Notes */}
+        <BentoItem span={2} variant="elevated">
+          <div>
+            <label className="block text-sm font-medium mb-2" style={{ color: palette.text }}>
               Notes
             </label>
             <textarea
@@ -340,30 +410,45 @@ export function PurchaseOrderForm({ onSubmit, initialData }: PurchaseOrderFormPr
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add any additional notes..."
               rows={3}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 transition-all resize-none"
+              style={{
+                ...inputStyle,
+                borderWidth: '1px',
+              }}
             />
           </div>
+        </BentoItem>
 
-          {/* Total and Submit */}
-          <div className="border-t pt-4 space-y-3">
-            <div className="flex items-center justify-between bg-orange-50 rounded-lg p-4">
-              <span className="font-semibold text-slate-900">Total Amount:</span>
-              <span className="text-2xl font-bold text-orange-600">
-                R$ {totalAmount.toFixed(2)}
-              </span>
-            </div>
-
-            <Button
-              onClick={handleSubmit}
-              className="w-full bg-green-600 hover:bg-green-700"
-              size="lg"
+        {/* Total */}
+        <BentoItem span={1} variant="elevated">
+          <div className="space-y-2">
+            <p style={{ color: palette.textSecondary }} className="text-sm font-medium">
+              Total Amount
+            </p>
+            <p
+              className="text-2xl font-bold"
+              style={{ color: palette.primary }}
             >
-              <Save className="h-4 w-4 mr-2" />
-              Save Purchase Order
-            </Button>
+              R$ {totalAmount.toFixed(2)}
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </BentoItem>
+
+        {/* Submit Button */}
+        <BentoItem span={3} variant="elevated">
+          <button
+            onClick={handleSubmit}
+            className="w-full px-4 py-3 rounded-lg font-semibold transition-all hover:shadow-lg flex items-center justify-center space-x-2"
+            style={{
+              backgroundColor: palette.primary,
+              color: palette.surface,
+            }}
+          >
+            <Save className="h-5 w-5" />
+            <span>Save Purchase Order</span>
+          </button>
+        </BentoItem>
+      </BentoBox>
     </div>
   );
 }
