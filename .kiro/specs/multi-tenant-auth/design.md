@@ -259,13 +259,77 @@ Based on the requirements analysis, the following correctness properties ensure 
 *For any* user registration or password update, the system should never store passwords in plaintext and should use secure hashing algorithms.
 **Validates: Requirements 2.2**
 
-**Property 9: Comprehensive Audit Logging**
-*For any* authentication event, authorization decision, or sensitive operation, the system should create immutable audit log entries with complete context information.
+**Property 11: Demo Account Functionality**
+*For any* demo login attempt, the system should authenticate demo credentials successfully, generate valid JWT tokens, and provide access to isolated demo tenant data that resets automatically.
 **Validates: Requirements 8.1, 8.2, 8.3, 8.4, 8.5**
+
+**Property 12: Comprehensive Audit Logging**
+*For any* authentication event, authorization decision, or sensitive operation, the system should create immutable audit log entries with complete context information.
+**Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5**
 
 **Property 10: Role Validation**
 *For any* user role assignment, the system should only accept valid role types (ADMIN, MANAGER, STAFF) and enforce appropriate permission levels for each role.
 **Validates: Requirements 4.1, 4.3, 4.4, 4.5**
+
+## Demo Account System
+
+The demo account system provides potential customers with immediate access to evaluate the platform using pre-configured sample data. This system maintains the same security standards as regular accounts while providing a seamless evaluation experience.
+
+### Demo Architecture
+
+```mermaid
+graph TB
+    DemoButton[Demo Button] --> LoadCredentials[Load Demo Credentials]
+    LoadCredentials --> LoginForm[Login Form]
+    LoginForm --> AuthService[Authentication Service]
+    AuthService --> DemoTenant[Demo Tenant Validation]
+    DemoTenant --> JWT[Generate JWT Token]
+    JWT --> DemoData[Access Demo Data]
+    
+    DemoData --> ResetScheduler[Auto-Reset Scheduler]
+    ResetScheduler --> SampleData[Restore Sample Data]
+```
+
+### Demo Components
+
+| Component | Responsibility | Implementation |
+|-----------|---------------|----------------|
+| **Demo Credential Service** | Manages demo account credentials and validation | TypeScript service with hardcoded demo accounts |
+| **Demo Data Seeder** | Creates and maintains sample data for demo tenant | Database seeding scripts with realistic restaurant data |
+| **Demo Reset Scheduler** | Automatically resets demo data on schedule | Cloudflare Cron Triggers or manual reset endpoints |
+| **Demo UI Integration** | Frontend demo button and credential loading | React/TypeScript components with form integration |
+
+### Demo Data Model
+
+```typescript
+interface DemoAccount {
+  tenantId: string;      // Fixed demo tenant ID
+  email: string;         // Demo user email
+  password: string;      // Demo user password (plaintext for UI loading)
+  role: string;          // Demo user role
+  locationId?: string;   // Optional location assignment
+}
+
+interface DemoTenant {
+  id: string;           // "demo-tenant"
+  name: string;         // "Demo Restaurant Group"
+  slug: string;         // "demo"
+  sampleData: {
+    locations: Location[];
+    inventory: InventoryItem[];
+    purchaseOrders: PurchaseOrder[];
+    transfers: Transfer[];
+  };
+}
+```
+
+### Demo Security Considerations
+
+- Demo accounts use the same JWT authentication as regular accounts
+- Demo tenant data is completely isolated from production tenants
+- Demo credentials are rotated periodically for security
+- Demo sessions have shorter expiration times (2 hours vs 24 hours)
+- Demo data resets automatically to prevent data pollution
 
 ## Error Handling
 

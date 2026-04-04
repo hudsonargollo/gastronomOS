@@ -8,6 +8,7 @@ import { IJWTService } from '../services/jwt';
 import { RegisterUserRequest, LoginRequest, LoginResponse, UserRole } from '../types';
 import { createErrorResponse } from '../utils';
 import { z } from 'zod';
+import { createDemoSessionManager, IDemoSessionManager, shouldUseDemoExpiration } from '../services/demo-session-manager';
 
 // Environment bindings interface
 interface Env extends Record<string, unknown> {
@@ -21,6 +22,7 @@ type Variables = {
   userService: IUserService;
   tenantService: ITenantService;
   auditService: IAuditService;
+  demoSessionManager: IDemoSessionManager;
 };
 
 // Validation schemas
@@ -50,10 +52,12 @@ auth.use('*', async (c, next) => {
     const userService = createUserService(db as any);
     const tenantService = createTenantService(db as any);
     const auditService = createAuditService(db);
+    const demoSessionManager = createDemoSessionManager(db as any);
     
     c.set('userService', userService);
     c.set('tenantService', tenantService);
     c.set('auditService', auditService);
+    c.set('demoSessionManager', demoSessionManager);
     
     return await next();
   } catch (error) {
@@ -243,6 +247,7 @@ auth.post('/login', async (c) => {
     // Handle demo login
     if (body.email === 'demo@gastronomos.com' && body.password === 'demo123') {
       const jwtService = c.get('jwtService');
+      const demoSessionManager = c.get('demoSessionManager');
       
       // Create demo user response
       const demoUser = {
@@ -253,7 +258,9 @@ auth.post('/login', async (c) => {
         locationId: 'demo-location-id'
       };
 
-      // Generate JWT token for demo user
+      // Generate JWT token for demo user with shorter expiration
+      // Requirements: 8.5 - Configure shorter expiration times for demo sessions
+      const demoExpiration = demoSessionManager.getDemoSessionExpiration();
       const jwtClaims = {
         sub: demoUser.id,
         tenant_id: demoUser.tenantId,
@@ -261,14 +268,14 @@ auth.post('/login', async (c) => {
         location_id: demoUser.locationId,
       };
       
-      const token = await jwtService.sign(jwtClaims);
+      const token = await jwtService.sign(jwtClaims, demoExpiration);
 
       // Log demo login
       await auditService.logAuthenticationEvent('LOGIN', {
         ...auditContext,
         tenantId: demoUser.tenantId,
         userId: demoUser.id,
-        resource: 'Demo user login'
+        resource: `Demo user login (session expires in ${demoExpiration / 3600} hours)`
       });
 
       const response: LoginResponse = {
@@ -328,6 +335,16 @@ auth.post('/login', async (c) => {
       ), 401);
     }
 
+    // Check if this is a demo account and get appropriate expiration
+    // Requirements: 8.5 - Configure shorter expiration times for demo sessions
+    const demoSessionManager = c.get('demoSessionManager');
+    const isDemoAccount = await demoSessionManager.isDemoAccount(user.email);
+    const isDemoTenant = demoSessionManager.isDemoTenant(user.tenantId);
+    const isDemo = isDemoAccount || isDemoTenant;
+    
+    // Get appropriate expiration time
+    const expirationSeconds = isDemo ? demoSessionManager.getDemoSessionExpiration() : undefined;
+
     // Generate JWT token (Requirement 2.3)
     const jwtClaims: any = {
       sub: user.id,
@@ -339,14 +356,16 @@ auth.post('/login', async (c) => {
       jwtClaims.location_id = user.locationId;
     }
     
-    const token = await jwtService.sign(jwtClaims);
+    const token = await jwtService.sign(jwtClaims, expirationSeconds);
 
     // Log successful login
+    const sessionType = isDemo ? 'demo session' : 'regular session';
+    const expirationInfo = isDemo ? ` (expires in ${expirationSeconds! / 3600} hours)` : '';
     await auditService.logAuthenticationEvent('LOGIN', {
       ...auditContext,
       tenantId: user.tenantId,
       userId: user.id,
-      resource: `Successful login for user: ${user.email}`
+      resource: `Successful login for user: ${user.email} - ${sessionType}${expirationInfo}`
     });
 
     // Prepare response (exclude sensitive data)

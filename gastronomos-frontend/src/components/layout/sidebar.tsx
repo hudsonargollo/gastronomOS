@@ -159,27 +159,44 @@ export function Sidebar({ collapsed = false, className }: SidebarProps) {
         collapsed ? 'w-16' : 'w-64 sm:w-72',
         className
       )}
-      animate={{ width: collapsed ? 64 : isMobile ? 280 : 288 }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      animate={{ 
+        width: collapsed ? 64 : isMobile ? 280 : 288,
+        transition: { duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }
+      }}
+      layout
     >
       {/* Logo */}
       <div className="flex h-14 sm:h-16 items-center justify-center border-b border-slate-700/50 bg-slate-900/50 px-3">
         <motion.div
           className="flex items-center space-x-3 w-full"
-          animate={{ opacity: collapsed ? 0 : 1 }}
-          transition={{ duration: 0.2 }}
+          animate={{ 
+            opacity: collapsed ? 0 : 1,
+            transition: { duration: 0.2, delay: collapsed ? 0 : 0.1 }
+          }}
         >
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-red-600 shadow-lg shrink-0">
+          <motion.div 
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-red-600 shadow-lg shrink-0"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             <GastronomyIcons.Chef className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-          </div>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent truncate">
-                GastronomOS
-              </h1>
-              <p className="text-xs text-slate-400 truncate">{t('sidebar.restaurantManagement')}</p>
-            </div>
-          )}
+          </motion.div>
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.div 
+                className="min-w-0 flex-1"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent truncate">
+                  GastronomOS
+                </h1>
+                <p className="text-xs text-slate-400 truncate">{t('sidebar.restaurantManagement')}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
 
@@ -195,6 +212,7 @@ export function Sidebar({ collapsed = false, className }: SidebarProps) {
               <motion.div
                 whileHover={{ scale: collapsed ? 1.05 : 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                layout
               >
                 <Link
                   href={item.children ? '#' : item.href}
@@ -220,11 +238,23 @@ export function Sidebar({ collapsed = false, className }: SidebarProps) {
                   />
                   {!collapsed && (
                     <>
-                      <span className="ml-3 flex-1 truncate">{item.name}</span>
+                      <AnimatePresence>
+                        <motion.span 
+                          className="ml-3 flex-1 truncate"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {item.name}
+                        </motion.span>
+                      </AnimatePresence>
                       {item.children && (
                         <motion.div
-                          animate={{ rotate: expanded ? 90 : 0 }}
-                          transition={{ duration: 0.2 }}
+                          animate={{ 
+                            rotate: expanded ? 90 : 0,
+                            transition: { duration: 0.2 }
+                          }}
                           className="ml-auto"
                         >
                           <ChevronRight className="h-4 w-4 text-slate-400" />
@@ -234,11 +264,20 @@ export function Sidebar({ collapsed = false, className }: SidebarProps) {
                   )}
                   
                   {/* Tooltip for collapsed state */}
-                  {collapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                      {item.name}
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {collapsed && (
+                      <motion.div 
+                        className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50"
+                        initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                        animate={{ opacity: 1, scale: 1, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, x: -10 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        {item.name}
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-800 rotate-45" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </Link>
               </motion.div>
 
@@ -260,8 +299,9 @@ export function Sidebar({ collapsed = false, className }: SidebarProps) {
                         return (
                           <motion.div
                             key={child.name}
-                            whileHover={{ scale: 1.02 }}
+                            whileHover={{ scale: 1.02, x: 2 }}
                             whileTap={{ scale: 0.98 }}
+                            layout
                           >
                             <Link
                               href={child.href}
@@ -300,18 +340,30 @@ export function Sidebar({ collapsed = false, className }: SidebarProps) {
             'flex items-center space-x-3 rounded-xl bg-slate-800/50 p-3 transition-colors hover:bg-slate-700/50 cursor-pointer',
             'min-h-[52px]' // Better touch target
           )}
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.02, backgroundColor: 'rgba(51, 65, 85, 0.5)' }}
           whileTap={{ scale: 0.98 }}
+          layout
         >
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shrink-0">
+          <motion.div 
+            className="h-8 w-8 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shrink-0"
+            whileHover={{ scale: 1.1 }}
+          >
             <span className="text-sm font-semibold text-white">JD</span>
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">João Silva</p>
-              <p className="text-xs text-slate-400 truncate">{t('sidebar.restaurantManager')}</p>
-            </div>
-          )}
+          </motion.div>
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.div 
+                className="flex-1 min-w-0"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <p className="text-sm font-medium text-white truncate">João Silva</p>
+                <p className="text-xs text-slate-400 truncate">{t('sidebar.restaurantManager')}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
     </motion.div>

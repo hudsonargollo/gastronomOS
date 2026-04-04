@@ -1,8 +1,10 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { motion, MotionProps } from "framer-motion"
 
 import { cn } from "@/lib/utils"
+import { buttonVariants as animationVariants, transitions } from "@/lib/animation-utils"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
@@ -36,24 +38,49 @@ const buttonVariants = cva(
   }
 )
 
+interface ButtonProps
+  extends Omit<React.ComponentProps<"button">, keyof MotionProps>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+  children?: React.ReactNode
+}
+
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
+  disabled = false,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
-  const Comp = asChild ? Slot : "button"
+}: ButtonProps) {
+  const motionProps: MotionProps = {
+    variants: animationVariants,
+    initial: "initial",
+    whileHover: disabled ? "disabled" : "hover",
+    whileTap: disabled ? "disabled" : "tap",
+    transition: transitions.fast,
+  }
+
+  if (asChild) {
+    return (
+      <Slot
+        data-slot="button"
+        data-variant={variant}
+        data-size={size}
+        className={cn(buttonVariants({ variant, size, className }))}
+        {...props}
+      />
+    )
+  }
 
   return (
-    <Comp
+    <motion.button
       data-slot="button"
       data-variant={variant}
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
+      disabled={disabled}
+      {...motionProps}
       {...props}
     />
   )

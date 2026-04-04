@@ -1,8 +1,36 @@
 import * as React from "react"
+import { motion, MotionProps } from "framer-motion"
 
 import { cn } from "@/lib/utils"
+import { cardVariants, transitions } from "@/lib/animation-utils"
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+interface CardProps extends Omit<React.ComponentProps<"div">, keyof MotionProps> {
+  animated?: boolean;
+  children?: React.ReactNode;
+}
+
+function Card({ className, animated = true, ...props }: CardProps) {
+  const motionProps: MotionProps = {
+    variants: cardVariants,
+    initial: "initial",
+    whileHover: "hover",
+    transition: transitions.spring,
+  }
+
+  if (animated) {
+    return (
+      <motion.div
+        data-slot="card"
+        className={cn(
+          "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+          className
+        )}
+        {...motionProps}
+        {...props}
+      />
+    )
+  }
+
   return (
     <div
       data-slot="card"

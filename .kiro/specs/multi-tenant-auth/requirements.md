@@ -98,7 +98,19 @@ The Multi-Tenant Authentication & Authorization system provides the security fou
 4. IF authorization fails at any level, THEN THE System SHALL return a 403 Forbidden error with a descriptive message
 5. WHEN authorization succeeds, THE System SHALL proceed with the requested operation using the authenticated context
 
-### Requirement 8: Security Audit and Logging
+### Requirement 8: Demo Account Management
+
+**User Story:** As a potential customer, I want to test the system using pre-configured demo credentials, so that I can evaluate the platform without creating a full account.
+
+#### Acceptance Criteria
+
+1. WHEN the system is initialized, THE System SHALL create a demo tenant with sample data and demo user accounts
+2. WHEN a demo button is clicked, THE System SHALL populate the login form with valid demo credentials
+3. WHEN demo credentials are submitted, THE System SHALL authenticate the user and generate a valid JWT token
+4. WHEN a demo user accesses the system, THE System SHALL provide access to realistic sample data within the demo tenant
+5. WHEN demo sessions expire, THE System SHALL automatically reset demo data to its initial state
+
+### Requirement 9: Security Audit and Logging
 
 **User Story:** As a system administrator, I want to track authentication and authorization events, so that I can monitor security and investigate potential breaches.
 
