@@ -19,7 +19,7 @@ export function ResponsiveContainer({
   padding = 'md',
   animate = true
 }: ResponsiveContainerProps) {
-  const maxWidthClasses = {
+  const maxWidthClasses: Record<string, string> = {
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-4xl',
@@ -28,19 +28,19 @@ export function ResponsiveContainer({
     full: 'max-w-full'
   };
 
-  const paddingClasses = {
+  const paddingClasses: Record<string, string> = {
     none: '',
     sm: 'p-2 sm:p-4',
     md: 'p-4 sm:p-6 lg:p-8',
     lg: 'p-6 sm:p-8 lg:p-12'
   };
 
-  const containerClasses = cn(
+  const containerClasses = [
     'mx-auto w-full',
-    maxWidthClasses[maxWidth],
-    paddingClasses[padding],
+    maxWidthClasses[maxWidth] || 'max-w-full',
+    paddingClasses[padding] || '',
     className
-  );
+  ].filter(Boolean).join(' ');
 
   if (!animate) {
     return <div className={containerClasses}>{children}</div>;
@@ -83,28 +83,26 @@ export function ResponsiveGrid({
   gap = 'md',
   animate = true
 }: ResponsiveGridProps) {
-  const gapClasses = {
+  const gapClasses: Record<string, string> = {
     sm: 'gap-2 sm:gap-4',
     md: 'gap-4 sm:gap-6',
     lg: 'gap-6 sm:gap-8'
   };
 
-  const getGridCols = () => {
-    const classes = [];
-    if (cols.default) classes.push(`grid-cols-${cols.default}`);
-    if (cols.sm) classes.push(`sm:grid-cols-${cols.sm}`);
-    if (cols.md) classes.push(`md:grid-cols-${cols.md}`);
-    if (cols.lg) classes.push(`lg:grid-cols-${cols.lg}`);
-    if (cols.xl) classes.push(`xl:grid-cols-${cols.xl}`);
-    return classes.join(' ');
-  };
+  // Use fixed grid layout based on lg column count
+  let gridColsClass = 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+  if (cols.lg === 2) {
+    gridColsClass = 'grid-cols-1 md:grid-cols-2';
+  } else if (cols.lg === 1) {
+    gridColsClass = 'grid-cols-1';
+  }
 
-  const gridClasses = cn(
+  const gridClasses = [
     'grid',
-    getGridCols(),
-    gapClasses[gap],
+    gridColsClass,
+    gapClasses[gap] || 'gap-4 sm:gap-6',
     className
-  );
+  ].filter(Boolean).join(' ');
 
   if (!animate) {
     return <div className={gridClasses}>{children}</div>;
@@ -118,7 +116,7 @@ export function ResponsiveGrid({
       transition={{ duration: 0.3 }}
       layout
     >
-      {React.Children.map(children, (child, index) => (
+      {Array.isArray(children) ? children.map((child, index) => (
         <motion.div
           key={index}
           initial={{ opacity: 0, y: 20 }}
@@ -132,7 +130,7 @@ export function ResponsiveGrid({
         >
           {child}
         </motion.div>
-      ))}
+      )) : children}
     </motion.div>
   );
 }

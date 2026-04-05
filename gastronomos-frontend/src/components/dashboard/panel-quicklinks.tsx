@@ -87,7 +87,7 @@ export function PanelQuicklinks() {
         <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg sm:text-xl flex items-center space-x-2">
-              <GastronomyIcons.Restaurant className="h-5 w-5 text-orange-500" />
+              <GastronomyIcons.Plate className="h-5 w-5 text-orange-500" />
               <span>Restaurant Panels</span>
             </CardTitle>
           </div>
