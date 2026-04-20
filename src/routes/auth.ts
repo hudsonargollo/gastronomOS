@@ -245,14 +245,14 @@ auth.post('/login', async (c) => {
     const body = await c.req.json();
     
     // Handle demo login
-    if (body.email === 'demo@gastronomos.com' && body.password === 'demo123') {
+    if (body.email === 'demo@pontal-stock.com' && body.password === 'demo123') {
       const jwtService = c.get('jwtService');
       const demoSessionManager = c.get('demoSessionManager');
       
       // Create demo user response
       const demoUser = {
         id: 'demo-user-id',
-        email: 'demo@gastronomos.com',
+        email: 'demo@pontal-stock.com',
         role: 'ADMIN' as UserRole,
         tenantId: 'demo-tenant-id',
         locationId: 'demo-location-id'
@@ -396,7 +396,7 @@ auth.post('/login', async (c) => {
       if (error.errors.some(e => e.path.includes('tenantSlug'))) {
         return c.json(createErrorResponse(
           'Demo Login',
-          'Use demo@gastronomos.com / demo123 for demo access',
+          'Use demo@pontal-stock.com / demo123 for demo access',
           'DEMO_LOGIN_INFO'
         ), 400);
       }

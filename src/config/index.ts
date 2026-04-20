@@ -1,5 +1,5 @@
 /**
- * Configuration service for GastronomOS Authentication System
+ * Configuration service for Pontal Stock Authentication System
  * 
  * Manages environment-specific configuration and secrets for different deployment environments.
  * Provides type-safe access to configuration values with proper defaults.
@@ -244,7 +244,7 @@ export const CONFIG = {
   JWT: {
     ALGORITHM: 'HS256' as const,
     EXPIRES_IN: 24 * 60 * 60, // 24 hours in seconds
-    ISSUER: 'gastronomos-auth',
+    ISSUER: 'pontal-stock',
     // Minimum secret length for security
     MIN_SECRET_LENGTH: 32,
   },
@@ -287,7 +287,7 @@ export function getEnvironmentConfig(env: string) {
       return {
         LOG_LEVEL: 'error',
         DEBUG: false,
-        CORS_ORIGINS: ['https://app.gastronomos.com'],
+        CORS_ORIGINS: ['https://app.pontal-stock.com'],
         JWT: {
           EXPIRES_IN: 24 * 60 * 60, // 24 hours
           REQUIRE_HTTPS: true,
@@ -297,7 +297,7 @@ export function getEnvironmentConfig(env: string) {
       return {
         LOG_LEVEL: 'warn',
         DEBUG: false,
-        CORS_ORIGINS: ['https://staging.gastronomos.com'],
+        CORS_ORIGINS: ['https://staging.pontal-stock.com'],
         JWT: {
           EXPIRES_IN: 12 * 60 * 60, // 12 hours
           REQUIRE_HTTPS: true,

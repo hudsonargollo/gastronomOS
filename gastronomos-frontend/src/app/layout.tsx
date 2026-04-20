@@ -9,9 +9,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "GastronomOS - O Sistema Operacional do seu Restaurante",
-  description: "O Sistema Operacional completo do seu restaurante para estoque, compras, transferências e análises",
-  keywords: ["restaurante", "gestão", "estoque", "PDV", "gastronomia"],
+  title: "Pontal Stock - Sistema de Gestão de Estoque",
+  description: "Sistema completo de gestão de estoque, compras, transferências e análises para sua operação",
+  keywords: ["estoque", "gestão", "inventário", "PDV", "pontal"],
 };
 
 export default function RootLayout({

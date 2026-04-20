@@ -13,12 +13,12 @@ const app = new Hono();
 const openApiSpec = {
   openapi: '3.0.0',
   info: {
-    title: 'GastronomOS Digital Menu & Kitchen Orchestration API',
+    title: 'Pontal Stock Digital Menu & Kitchen Orchestration API',
     version: '1.0.0',
     description: 'Multi-tenant restaurant management platform with QR menus, kitchen displays, payment processing, and commission tracking',
     contact: {
-      name: 'GastronomOS Support',
-      email: 'support@gastronomos.com'
+      name: 'Pontal Stock Support',
+      email: 'support@pontal-stock.com'
     }
   },
   servers: [
@@ -655,7 +655,7 @@ app.get('/', (c) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GastronomOS API Documentation</title>
+  <title>Pontal Stock API Documentation</title>
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.10.0/swagger-ui.css">
   <style>
     body { margin: 0; padding: 0; }

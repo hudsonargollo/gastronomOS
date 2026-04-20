@@ -369,7 +369,7 @@ export function DesignSystemDemo() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Palette className="h-4 w-4" />
-              Gastronomos Design System v2.0
+              Pontal Stock Design System v2.0
             </div>
             
             <div className="flex items-center gap-4 text-sm text-muted-foreground">

@@ -4,7 +4,7 @@ export default function PontalCarapitanguiLanding() {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Pontal Carapitangui - GastronomOS</title>
+        <title>Pontal Carapitangui - Pontal Stock</title>
         <style>{`
           * {
             margin: 0;
@@ -307,7 +307,7 @@ export default function PontalCarapitanguiLanding() {
             <h2>Visão Geral do Sistema</h2>
             <div className="content-box">
               <p>
-                O <strong>GastronomOS</strong> é uma solução completa de gestão para estabelecimentos de alimentação e bebidas, especialmente desenvolvida para clubes de praia como o Pontal Carapitangui.
+                O <strong>Pontal Stock</strong> é uma solução completa de gestão de estoque para estabelecimentos de alimentação e bebidas, especialmente desenvolvida para clubes de praia como o Pontal Carapitangui.
               </p>
               <p>
                 Nosso sistema integra todas as operações do seu estabelecimento em uma única plataforma: desde o atendimento ao cliente até a gestão financeira, passando por controle de estoque e análises de desempenho.
@@ -391,7 +391,7 @@ export default function PontalCarapitanguiLanding() {
             <div className="cta-section" style={{ marginTop: '2rem' }}>
               <h2>Impacto Direto no Seu Negócio</h2>
               <p>
-                Com o GastronomOS, você terá controle total sobre suas operações, reduzirá custos operacionais, aumentará a satisfação dos clientes e terá dados precisos para tomar decisões estratégicas.
+                Com o Pontal Stock, você terá controle total sobre suas operações, reduzirá custos operacionais, aumentará a satisfação dos clientes e terá dados precisos para tomar decisões estratégicas.
               </p>
             </div>
           </section>
@@ -431,8 +431,8 @@ export default function PontalCarapitanguiLanding() {
 
             <div className="content-box">
               <h3 style={{ color: '#ea580c', marginBottom: '1rem' }}>URLs de Acesso</h3>
-              <p><strong>Frontend:</strong> <code>https://gastronomos.clubemkt.digital</code></p>
-              <p><strong>API:</strong> <code>https://api.gastronomos.clubemkt.digital</code></p>
+              <p><strong>Frontend:</strong> <code>https://pontal-stock.clubemkt.digital</code></p>
+              <p><strong>API:</strong> <code>https://api.pontal-stock.clubemkt.digital</code></p>
             </div>
           </section>
         </div>
@@ -440,7 +440,7 @@ export default function PontalCarapitanguiLanding() {
         <section className="cta-section">
           <div className="container">
             <h2>Pronto para Transformar Seu Negócio?</h2>
-            <p>Entre em contato conosco para uma demonstração personalizada do GastronomOS.</p>
+            <p>Entre em contato conosco para uma demonstração personalizada do Pontal Stock.</p>
             <div className="cta-buttons">
               <button className="btn btn-primary">Solicitar Demonstração</button>
               <button className="btn btn-secondary">Saiba Mais</button>
@@ -449,7 +449,7 @@ export default function PontalCarapitanguiLanding() {
         </section>
 
         <footer>
-          <p>© 2026 GastronomOS - Solução Inteligente para Gestão de Estabelecimentos</p>
+          <p>© 2026 Pontal Stock - Solução Inteligente para Gestão de Estoque</p>
           <p>Desenvolvido com tecnologia de ponta para o Pontal Carapitangui</p>
         </footer>
 

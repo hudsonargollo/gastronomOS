@@ -1,6 +1,6 @@
 import React from 'react';
 
-// Custom SVG icons for GastronomOS
+// Custom SVG icons for Pontal Stock
 export const GastronomyIcons = {
   // Main logo/brand icon
   Chef: ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (

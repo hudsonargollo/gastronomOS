@@ -29,15 +29,15 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const defaultBannerDefaults: BannerDefaults = {
   backgroundType: 'solid',
-  backgroundColor: '#f8fafc',
-  textColor: '#0f172a',
+  backgroundColor: '#faf8f3',
+  textColor: '#1c2912',
   overlayOpacity: 0.6,
 };
 
 const defaultThemeConfig: ThemeConfig = {
-  tenantId: 'default',
-  theme: ThemeName.SIGNATURE,
-  palette: colorPalettes[ThemeName.SIGNATURE],
+  tenantId: 'pontal-carapitangui',
+  theme: ThemeName.PONTAL_STOCK,
+  palette: colorPalettes[ThemeName.PONTAL_STOCK],
   typography: typographyPresets.editorial,
   bannerDefaults: defaultBannerDefaults,
 };
@@ -48,7 +48,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Load theme configuration from localStorage on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('gastronomos-theme-config');
+    const savedTheme = localStorage.getItem('pontal-stock-theme-config');
     if (savedTheme) {
       try {
         const parsed = JSON.parse(savedTheme);
@@ -103,7 +103,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       palette: newPalette,
     };
     setThemeConfig(newConfig);
-    localStorage.setItem('gastronomos-theme-config', JSON.stringify(newConfig));
+    localStorage.setItem('pontal-stock-theme-config', JSON.stringify(newConfig));
   }, [themeConfig]);
 
   const setCustomColors = useCallback((colors: Partial<ColorPalette>) => {
@@ -113,7 +113,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       customColors: colors,
     };
     setThemeConfig(newConfig);
-    localStorage.setItem('gastronomos-theme-config', JSON.stringify(newConfig));
+    localStorage.setItem('pontal-stock-theme-config', JSON.stringify(newConfig));
   }, [themeConfig]);
 
   const setTypography = useCallback((config: TypographyConfig) => {
@@ -122,7 +122,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       typography: config,
     };
     setThemeConfig(newConfig);
-    localStorage.setItem('gastronomos-theme-config', JSON.stringify(newConfig));
+    localStorage.setItem('pontal-stock-theme-config', JSON.stringify(newConfig));
   }, [themeConfig]);
 
   const setBannerDefaults = useCallback((defaults: BannerDefaults) => {
@@ -131,13 +131,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       bannerDefaults: defaults,
     };
     setThemeConfig(newConfig);
-    localStorage.setItem('gastronomos-theme-config', JSON.stringify(newConfig));
+    localStorage.setItem('pontal-stock-theme-config', JSON.stringify(newConfig));
   }, [themeConfig]);
 
   const resetTheme = useCallback(() => {
     setThemeConfig(defaultThemeConfig);
     setCustomColorsState(undefined);
-    localStorage.removeItem('gastronomos-theme-config');
+    localStorage.removeItem('pontal-stock-theme-config');
   }, []);
 
   const value: ThemeContextType = {

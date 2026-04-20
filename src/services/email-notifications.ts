@@ -493,8 +493,8 @@ export const defaultEmailTemplates: Record<NotificationTypes, EmailTemplate> = {
 export function createEmailNotificationService(config?: Partial<EmailServiceConfig>): EmailNotificationService {
   const defaultConfig: EmailServiceConfig = {
     provider: 'mock',
-    fromEmail: 'noreply@gastronomos.com',
-    fromName: 'GastronomOS',
+    fromEmail: 'noreply@pontal-stock.com',
+    fromName: 'Pontal Stock',
     templates: defaultEmailTemplates,
     ...config,
   };

@@ -322,7 +322,7 @@ export class WebhookSystemService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'GastronomOS-Webhooks/1.0',
+          'User-Agent': 'Pontal-Stock-Webhooks/1.0',
           ...endpoint.headers,
         },
         body: JSON.stringify(testPayload),
@@ -446,7 +446,7 @@ export class WebhookSystemService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'GastronomOS-Webhooks/1.0',
+          'User-Agent': 'Pontal-Stock-Webhooks/1.0',
           'X-Webhook-ID': delivery.id,
           'X-Webhook-Event': event.eventType,
           'X-Webhook-Timestamp': event.timestamp.toISOString(),

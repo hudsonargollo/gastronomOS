@@ -226,7 +226,7 @@ export function ErrorMessageHandlerProvider({
         type: 'contact_support',
         label: 'Contact Support',
         description: 'Get help from our support team',
-        action: () => { window.open('mailto:support@gastronomos.com', '_blank'); },
+        action: () => { window.open('mailto:support@pontal-stock.com', '_blank'); },
         icon: <Mail className="h-4 w-4" />,
       },
     ];

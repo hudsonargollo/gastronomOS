@@ -147,7 +147,7 @@ export class ConfigurationManager {
     
     // JWT defaults
     this.set('jwt.algorithm', 'HS256', 'default');
-    this.set('jwt.issuer', 'gastronomos', 'default');
+    this.set('jwt.issuer', 'pontal-stock', 'default');
     this.set('jwt.expirySeconds', 86400, 'default'); // 24 hours
     
     // Rate limiting defaults

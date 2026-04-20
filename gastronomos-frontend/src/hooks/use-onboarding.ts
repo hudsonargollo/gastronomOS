@@ -8,7 +8,7 @@ export function useOnboarding() {
 
   useEffect(() => {
     // Check if user has completed onboarding
-    const hasCompletedOnboarding = localStorage.getItem('gastronomos-onboarding-completed');
+    const hasCompletedOnboarding = localStorage.getItem('pontal-stock-onboarding-completed');
     const isFirstTime = !hasCompletedOnboarding;
     
     setIsFirstVisit(isFirstTime);
@@ -34,11 +34,11 @@ export function useOnboarding() {
   const completeOnboarding = () => {
     setIsOnboardingOpen(false);
     setIsFirstVisit(false);
-    localStorage.setItem('gastronomos-onboarding-completed', 'true');
+    localStorage.setItem('pontal-stock-onboarding-completed', 'true');
   };
 
   const resetOnboarding = () => {
-    localStorage.removeItem('gastronomos-onboarding-completed');
+    localStorage.removeItem('pontal-stock-onboarding-completed');
     setIsFirstVisit(true);
     setIsOnboardingOpen(true);
   };

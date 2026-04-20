@@ -43,7 +43,7 @@ describe('DemoSessionManager', () => {
 
   describe('isDemoAccount', () => {
     it('should identify demo accounts by email pattern', async () => {
-      expect(await demoSessionManager.isDemoAccount('demo@gastronomos.com')).toBe(true);
+      expect(await demoSessionManager.isDemoAccount('demo@pontal-stock.com')).toBe(true);
       expect(await demoSessionManager.isDemoAccount('manager@demo-restaurant.com')).toBe(true);
       expect(await demoSessionManager.isDemoAccount('demo@example.com')).toBe(true);
     });
@@ -54,7 +54,7 @@ describe('DemoSessionManager', () => {
     });
 
     it('should be case-insensitive', async () => {
-      expect(await demoSessionManager.isDemoAccount('DEMO@gastronomos.com')).toBe(true);
+      expect(await demoSessionManager.isDemoAccount('DEMO@pontal-stock.com')).toBe(true);
       expect(await demoSessionManager.isDemoAccount('Manager@DEMO-restaurant.com')).toBe(true);
     });
   });

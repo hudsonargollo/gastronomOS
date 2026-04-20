@@ -191,9 +191,9 @@ export function Sidebar({ collapsed = false, className }: SidebarProps) {
                 transition={{ duration: 0.2 }}
               >
                 <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent truncate">
-                  GastronomOS
+                  Pontal Stock
                 </h1>
-                <p className="text-xs text-slate-400 truncate">{t('sidebar.restaurantManagement')}</p>
+                <p className="text-xs text-slate-400 truncate">{t('sidebar.stockManagement')}</p>
               </motion.div>
             )}
           </AnimatePresence>

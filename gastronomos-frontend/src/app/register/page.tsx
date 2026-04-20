@@ -51,7 +51,7 @@ export default function RegisterPage() {
       }
 
       apiClient.setToken(data.token);
-      toast.success('Account created successfully! Welcome to GastronomOS!');
+      toast.success('Account created successfully! Welcome to Pontal Stock!');
       router.push('/dashboard');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Registration failed');
@@ -62,10 +62,10 @@ export default function RegisterPage() {
 
   const handleDemoFill = () => {
     setFormData({
-      email: 'demo@gastronomos.com',
+      email: 'demo@pontal-stock.com',
       password: 'demo123456',
-      tenantName: 'Demo Restaurant',
-      tenantSlug: 'demo-restaurant',
+      tenantName: 'Pontal Carapitangui',
+      tenantSlug: 'pontal-carapitangui',
       role: 'ADMIN',
     });
     toast.info('Demo credentials filled in');
@@ -110,9 +110,9 @@ export default function RegisterPage() {
               <GastronomyIcons.Chef className="h-8 w-8 text-white" />
             </motion.div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-              GastronomOS
+              Pontal Stock
             </h1>
-            <p className="text-slate-600 text-sm mt-1">Create your restaurant account</p>
+            <p className="text-slate-600 text-sm mt-1">Create your stock management account</p>
           </div>
 
           {/* Register Card */}
@@ -122,7 +122,7 @@ export default function RegisterPage() {
                 Create Account
               </CardTitle>
               <CardDescription className="text-slate-600">
-                Get started with GastronomOS
+                Get started with Pontal Stock
               </CardDescription>
             </CardHeader>
             <CardContent>

@@ -28,6 +28,15 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    
+    /* Pontal Stock - Maraú Sunset Palette */
+    --color-primary: #2d5016;
+    --color-secondary: #ea580c;
+    --color-accent: #f4a460;
+    --color-background: #faf8f3;
+    --color-surface: #ffffff;
+    --color-text: #1c2912;
+    --color-text-secondary: #5a6b3d;
   }
 
   .dark {
@@ -61,8 +70,8 @@
   }
   
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    background-color: var(--color-background);
+    color: var(--color-text);
   }
   
   /* Adaptive Gastronomy Design System - Semantic Tokens */
@@ -96,8 +105,8 @@
     --token-status-error: #dc2626;
     
     /* Interactive tokens */
-    --token-interactive-hover: rgba(0, 0, 0, 0.9);
-    --token-interactive-active: rgba(0, 0, 0, 0.8);
+    --token-interactive-hover: rgba(45, 80, 22, 0.9);
+    --token-interactive-active: rgba(45, 80, 22, 0.8);
     --token-interactive-focus: var(--color-accent);
     --token-interactive-disabled: rgba(0, 0, 0, 0.4);
     

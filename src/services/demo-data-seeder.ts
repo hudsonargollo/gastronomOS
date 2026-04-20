@@ -15,7 +15,7 @@ import { generateId } from '../utils';
 /**
  * Demo Data Seeder Service
  * 
- * Creates realistic sample data for the demo tenant to showcase GastronomOS functionality.
+ * Creates realistic sample data for the demo tenant to showcase Pontal Stock functionality.
  * Implements requirements 8.4 and 8.5 for demo data creation and reset functionality.
  */
 export interface IDemoDataSeeder {
@@ -175,7 +175,7 @@ export class DemoDataSeeder implements IDemoDataSeeder {
       {
         id: 'demo-user-id',
         tenantId: this.DEMO_TENANT_ID,
-        email: 'demo@gastronomos.com',
+        email: 'demo@pontal-stock.com',
         passwordHash: '$2a$10$demo.hash.for.demo123.password', // bcrypt hash for 'demo123'
         role: UserRole.ADMIN,
         firstName: 'Demo',

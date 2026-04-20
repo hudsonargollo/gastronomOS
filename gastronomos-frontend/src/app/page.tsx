@@ -49,12 +49,12 @@ function LoginPageContent() {
     setIsLoading(true);
     
     try {
-      const response = await apiClient.login('demo@gastronomos.com', 'demo123', 'demo-restaurant');
+      const response = await apiClient.login('demo@pontal-stock.com', 'demo123', 'pontal-carapitangui');
       apiClient.setToken(response.token);
       toast.success(t('auth.welcomeBackSuccess'));
       router.push('/dashboard');
     } catch (error) {
-      setFormData({ email: 'demo@gastronomos.com', password: 'demo123', tenantSlug: 'demo-restaurant' });
+      setFormData({ email: 'demo@pontal-stock.com', password: 'demo123', tenantSlug: 'pontal-carapitangui' });
       toast.error(error instanceof Error ? error.message : 'Demo account not available. Please register first.');
     } finally {
       setIsLoading(false);
@@ -86,9 +86,9 @@ function LoginPageContent() {
               <GastronomyIcons.Chef className="h-8 w-8 text-white" />
             </motion.div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-              GastronomOS
+              Pontal Stock
             </h1>
-            <p className="text-slate-600 text-sm mt-1">Sistema de Gestão</p>
+            <p className="text-slate-600 text-sm mt-1">Sistema de Gestão de Estoque</p>
           </div>
 
           {/* Login Card */}

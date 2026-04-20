@@ -20,8 +20,9 @@ export interface BrandingSettings {
 }
 
 const defaultBranding: BrandingSettings = {
-  tenantId: 'default',
-  businessName: 'GastronomOS Demo',
+  tenantId: 'pontal-carapitangui',
+  businessName: 'Pontal Stock',
+  logo: '/logos/pontal-carapitangui.webp',
   bannerImages: [],
 };
 
@@ -46,7 +47,7 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Load branding settings from localStorage
-    const savedBranding = localStorage.getItem('gastronomos-branding');
+    const savedBranding = localStorage.getItem('pontal-stock-branding');
     if (savedBranding) {
       try {
         const parsed = JSON.parse(savedBranding);
@@ -60,7 +61,7 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
   const updateBranding = (updates: Partial<BrandingSettings>) => {
     const newBranding = { ...branding, ...updates };
     setBranding(newBranding);
-    localStorage.setItem('gastronomos-branding', JSON.stringify(newBranding));
+    localStorage.setItem('pontal-stock-branding', JSON.stringify(newBranding));
   };
 
   const uploadLogo = async (file: File): Promise<string> => {
@@ -119,7 +120,7 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
 
   const resetToDefaults = () => {
     setBranding(defaultBranding);
-    localStorage.removeItem('gastronomos-branding');
+    localStorage.removeItem('pontal-stock-branding');
   };
 
   return (

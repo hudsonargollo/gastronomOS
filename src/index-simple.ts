@@ -40,7 +40,7 @@ app.get('/health', async (c) => {
 // Simple root endpoint
 app.get('/', (c) => {
   return c.json({
-    message: 'GastronomOS API',
+    message: 'Pontal Stock API',
     version: '1.0.0',
     status: 'running'
   });

@@ -1,102 +1,11 @@
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { MainLayout } from '@/components/layout/main-layout';
-import { StatsCard } from '@/components/dashboard/stats-card';
-import { ActivityFeed } from '@/components/dashboard/activity-feed';
-import { PanelQuicklinks } from '@/components/dashboard/panel-quicklinks';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { GastronomyIcons } from '@/components/icons/gastronomy-icons';
-import { useTranslations } from '@/hooks/use-translations';
-import { useOnboarding } from '@/hooks/use-onboarding';
-import { OnboardingTour } from '@/components/onboarding/onboarding-tour';
-import Link from 'next/link';
-import {
-  Package,
-  ShoppingCart,
-  ArrowRightLeft,
-  TrendingUp,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  DollarSign,
-  Plus,
-} from 'lucide-react';
+// Import the new Pontal Stock dashboard
+import PontalDashboard from './page-pontal';
 
 export default function DashboardPage() {
-  const { t } = useTranslations();
-  const { 
-    isOnboardingOpen, 
-    isFirstVisit, 
-    startOnboarding, 
-    closeOnboarding, 
-    completeOnboarding 
-  } = useOnboarding();
-
-  const statsData = [
-    {
-      title: t('dashboard.totalProducts'),
-      value: '2.847',
-      change: { value: 12, type: 'increase' as const, period: t('dashboard.vsLastMonth') },
-      icon: Package,
-      color: 'blue' as const,
-    },
-    {
-      title: t('dashboard.activeOrders'),
-      value: '156',
-      change: { value: 8, type: 'increase' as const, period: t('dashboard.vsLastWeek') },
-      icon: ShoppingCart,
-      color: 'green' as const,
-    },
-    {
-      title: t('dashboard.pendingTransfers'),
-      value: '23',
-      change: { value: 15, type: 'decrease' as const, period: t('dashboard.vsYesterday') },
-      icon: ArrowRightLeft,
-      color: 'orange' as const,
-    },
-    {
-      title: t('dashboard.monthlyRevenue'),
-      value: 'R$ 47.892',
-      change: { value: 23, type: 'increase' as const, period: t('dashboard.vsLastMonth') },
-      icon: DollarSign,
-      color: 'purple' as const,
-    },
-  ];
-
-  const quickActions = [
-    {
-      title: t('dashboard.createPurchaseOrder'),
-      description: t('dashboard.createPurchaseOrderDesc'),
-      icon: ShoppingCart,
-      color: 'bg-blue-500 hover:bg-blue-600',
-      href: '/purchasing/orders',
-    },
-    {
-      title: t('dashboard.processReceipt'),
-      description: t('dashboard.processReceiptDesc'),
-      icon: GastronomyIcons.Receipt,
-      color: 'bg-green-500 hover:bg-green-600',
-      href: '/purchasing/receipts',
-    },
-    {
-      title: t('dashboard.createTransfer'),
-      description: t('dashboard.createTransferDesc'),
-      icon: ArrowRightLeft,
-      color: 'bg-orange-500 hover:bg-orange-600',
-      href: '/transfers',
-    },
-    {
-      title: t('dashboard.viewAnalytics'),
-      description: t('dashboard.viewAnalyticsDesc'),
-      icon: TrendingUp,
-      color: 'bg-purple-500 hover:bg-purple-600',
-      href: '/analytics',
-    },
-  ];
+  // Use the new Pontal Stock dashboard
+  return <PontalDashboard />;
 
   const alerts = [
     {

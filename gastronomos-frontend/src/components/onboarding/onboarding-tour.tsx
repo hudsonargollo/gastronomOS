@@ -31,8 +31,8 @@ interface OnboardingStep {
 const onboardingSteps: OnboardingStep[] = [
   {
     id: 'welcome',
-    title: 'Bem-vindo ao GastronomOS!',
-    description: 'Sistema completo para gestão do seu restaurante. Vamos fazer um tour rápido.',
+    title: 'Bem-vindo ao Pontal Stock!',
+    description: 'Sistema completo para gestão de estoque. Vamos fazer um tour rápido.',
     icon: CheckCircle,
     features: [
       'Gestão de estoque',
@@ -135,7 +135,7 @@ export function OnboardingTour({ isOpen, onClose, onComplete }: OnboardingTourPr
   const handleComplete = async () => {
     setIsCompleting(true);
     // Mark onboarding as completed in localStorage
-    localStorage.setItem('gastronomos-onboarding-completed', 'true');
+    localStorage.setItem('pontal-stock-onboarding-completed', 'true');
     
     setTimeout(() => {
       onComplete();
@@ -144,7 +144,7 @@ export function OnboardingTour({ isOpen, onClose, onComplete }: OnboardingTourPr
   };
 
   const handleSkip = () => {
-    localStorage.setItem('gastronomos-onboarding-completed', 'true');
+    localStorage.setItem('pontal-stock-onboarding-completed', 'true');
     onClose();
   };
 

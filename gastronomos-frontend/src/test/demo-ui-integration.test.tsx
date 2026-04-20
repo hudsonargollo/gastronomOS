@@ -56,14 +56,14 @@ describe('Demo UI Integration', () => {
         accounts: [
           {
             role: 'admin',
-            email: 'demo@gastronomos.com',
+            email: 'demo@pontal-stock.com',
             password: 'demo123',
             description: 'Full system access with all permissions',
           },
         ],
         defaultAccount: {
           role: 'admin',
-          email: 'demo@gastronomos.com',
+          email: 'demo@pontal-stock.com',
           password: 'demo123',
           description: 'Full system access with all permissions',
         },
@@ -89,7 +89,7 @@ describe('Demo UI Integration', () => {
       const emailInput = screen.getByPlaceholderText('seu@email.com') as HTMLInputElement;
       const passwordInput = screen.getByPlaceholderText('••••••••') as HTMLInputElement;
 
-      expect(emailInput.value).toBe('demo@gastronomos.com');
+      expect(emailInput.value).toBe('demo@pontal-stock.com');
       expect(passwordInput.value).toBe('demo123');
     });
   });
@@ -103,7 +103,7 @@ describe('Demo UI Integration', () => {
           accounts: [],
           defaultAccount: {
             role: 'admin',
-            email: 'demo@gastronomos.com',
+            email: 'demo@pontal-stock.com',
             password: 'demo123',
             description: 'Full system access',
           },
@@ -152,7 +152,7 @@ describe('Demo UI Integration', () => {
           accounts: [],
           defaultAccount: {
             role: 'admin',
-            email: 'demo@gastronomos.com',
+            email: 'demo@pontal-stock.com',
             password: 'demo123',
             description: 'Full system access',
           },

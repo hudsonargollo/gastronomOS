@@ -19,7 +19,7 @@ describe('Demo API Integration', () => {
       expect(response.data.accounts).toBeInstanceOf(Array);
       expect(response.data.accounts.length).toBeGreaterThan(0);
       expect(response.data.defaultAccount).toBeDefined();
-      expect(response.data.defaultAccount.email).toBe('demo@gastronomos.com');
+      expect(response.data.defaultAccount.email).toBe('demo@pontal-stock.com');
       expect(response.data.defaultAccount.password).toBe('demo123');
     } catch (error) {
       // If the API is not running, skip the test

@@ -564,6 +564,100 @@ export class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  // Payment Schedules
+  async createPaymentSchedule(data: any) {
+    return this.request('/payment-schedules', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getPaymentSchedules(params?: PaginationParams & { status?: string }) {
+    const queryString = params ? this.buildQueryString(params) : '';
+    return this.request(`/payment-schedules${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getPaymentSchedule(id: string) {
+    return this.request(`/payment-schedules/${id}`);
+  }
+
+  async updatePaymentSchedule(id: string, data: any) {
+    return this.request(`/payment-schedules/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async markPaymentAsPaid(id: string, data: any) {
+    return this.request(`/payment-schedules/${id}/mark-paid`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async sendPaymentReminder(id: string) {
+    return this.request(`/payment-schedules/${id}/send-reminder`, {
+      method: 'PUT',
+    });
+  }
+
+  async deletePaymentSchedule(id: string) {
+    return this.request(`/payment-schedules/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Stock Alert Configs
+  async createStockAlertConfig(data: any) {
+    return this.request('/stock-alert-configs', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getStockAlertConfigs(params?: PaginationParams & { productId?: string; locationId?: string; isActive?: boolean }) {
+    const queryString = params ? this.buildQueryString(params) : '';
+    return this.request(`/stock-alert-configs${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getStockAlertConfig(id: string) {
+    return this.request(`/stock-alert-configs/${id}`);
+  }
+
+  async updateStockAlertConfig(id: string, data: any) {
+    return this.request(`/stock-alert-configs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteStockAlertConfig(id: string) {
+    return this.request(`/stock-alert-configs/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Dashboard Metrics
+  async getDashboardMetrics(params?: { locationId?: string }) {
+    const queryString = params ? this.buildQueryString(params) : '';
+    return this.request(`/dashboard/metrics${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getPaymentsDue(params?: { daysAhead?: number }) {
+    const queryString = params ? this.buildQueryString(params) : '';
+    return this.request(`/dashboard/payments-due${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getInventoryValue(params?: { locationId?: string }) {
+    const queryString = params ? this.buildQueryString(params) : '';
+    return this.request(`/dashboard/inventory-value${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getStockAlerts(params?: PaginationParams & { status?: string; severity?: string }) {
+    const queryString = params ? this.buildQueryString(params) : '';
+    return this.request(`/dashboard/stock-alerts${queryString ? `?${queryString}` : ''}`);
+  }
 }
 
 export const apiClient = new ApiClient();

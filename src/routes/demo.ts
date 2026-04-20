@@ -46,7 +46,7 @@ demo.get('/credentials', async (c) => {
     const demoAccounts = [
       {
         role: 'admin',
-        email: 'demo@gastronomos.com',
+        email: 'demo@pontal-stock.com',
         password: 'demo123',
         description: 'Full system access with all permissions'
       },

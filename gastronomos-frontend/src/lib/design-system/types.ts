@@ -7,7 +7,8 @@ export enum ThemeName {
   BISTRO_NOIR = 'bistro-noir',
   NEON_DINER = 'neon-diner',
   ORGANIC_GARDEN = 'organic-garden',
-  SIGNATURE = 'signature'
+  SIGNATURE = 'signature',
+  PONTAL_STOCK = 'pontal-stock'
 }
 
 export interface ColorPalette {

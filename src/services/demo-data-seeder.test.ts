@@ -92,7 +92,7 @@ describe('Demo Data Structure Validation', () => {
   it('should have valid demo credentials structure', () => {
     const expectedCredentials = {
       admin: {
-        email: 'demo@gastronomos.com',
+        email: 'demo@pontal-stock.com',
         password: 'demo123',
         role: 'ADMIN'
       },
@@ -109,7 +109,7 @@ describe('Demo Data Structure Validation', () => {
     };
 
     // Validate credentials structure
-    expect(expectedCredentials.admin.email).toBe('demo@gastronomos.com');
+    expect(expectedCredentials.admin.email).toBe('demo@pontal-stock.com');
     expect(expectedCredentials.manager.role).toBe('MANAGER');
     expect(expectedCredentials.staff.role).toBe('STAFF');
   });

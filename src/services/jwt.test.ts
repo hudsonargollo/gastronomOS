@@ -29,7 +29,7 @@ describe('JWT Service', () => {
       expect(verifiedClaims.tenant_id).toBe(claims.tenant_id);
       expect(verifiedClaims.role).toBe(claims.role);
       expect(verifiedClaims.location_id).toBe(claims.location_id);
-      expect(verifiedClaims.iss).toBe('gastronomos-auth');
+      expect(verifiedClaims.iss).toBe('pontal-stock');
       expect(verifiedClaims.exp).toBeGreaterThan(Math.floor(Date.now() / 1000));
       expect(verifiedClaims.iat).toBeLessThanOrEqual(Math.floor(Date.now() / 1000));
     });

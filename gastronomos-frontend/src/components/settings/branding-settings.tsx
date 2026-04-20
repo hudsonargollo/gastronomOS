@@ -79,7 +79,7 @@ export function BrandingSettings() {
 
   const handleReset = () => {
     resetToDefaults();
-    setBusinessName('GastronomOS Demo');
+    setBusinessName('Pontal Stock');
     setSelectedPalette('orange');
     toast.success('Configurações de marca redefinidas');
   };

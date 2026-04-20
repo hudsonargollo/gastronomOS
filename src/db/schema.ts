@@ -198,10 +198,15 @@ export const purchaseOrders = sqliteTable('purchase_orders', {
   totalCostCents: integer('total_cost_cents'),
   createdBy: text('created_by').notNull().references(() => users.id),
   approvedBy: text('approved_by').references(() => users.id),
-  approvedAt: integer('approved_at'),
+  approvedAtAt: integer('approved_at'),
   receivedBy: text('received_by').references(() => users.id),
   receivedAt: integer('received_at'),
   notes: text('notes'),
+  // Payment scheduling fields
+  isRecurring: integer('is_recurring', { mode: 'boolean' }).notNull().default(false),
+  recurringFrequency: text('recurring_frequency'), // WEEKLY, MONTHLY, QUARTERLY, YEARLY
+  nextPaymentDueAt: integer('next_payment_due_at'),
+  paymentReminderDays: integer('payment_reminder_days').default(3),
   createdAt: integer('created_at').notNull(),
   updatedAt: integer('updated_at').notNull(),
 }, (table) => ({
@@ -212,6 +217,7 @@ export const purchaseOrders = sqliteTable('purchase_orders', {
   supplierIdx: index('po_supplier_idx').on(table.supplierId),
   createdByIdx: index('po_created_by_idx').on(table.createdBy),
   approvedAtIdx: index('po_approved_at_idx').on(table.approvedAt),
+  nextPaymentDueIdx: index('po_next_payment_due_idx').on(table.nextPaymentDueAt),
   tenantPoNumberUnique: uniqueIndex('purchase_orders_tenant_id_po_number_unique').on(table.tenantId, table.poNumber),
 }));
 
@@ -1448,10 +1454,102 @@ export const inventoryConsumptions = sqliteTable('inventory_consumptions', {
   orderIdx: index('inventory_consumption_order_idx').on(table.orderId),
   productIdx: index('inventory_consumption_product_idx').on(table.productId),
   locationIdx: index('inventory_consumption_location_idx').on(table.locationId),
-  tenantOrderIdx: index('inventory_consumption_tenant_order_idx').on(table.tenantId, table.orderId),
-  consumedAtIdx: index('inventory_consumption_consumed_at_idx').on(table.consumedAt),
-  reversedAtIdx: index('inventory_consumption_reversed_at_idx').on(table.reversedAt),
-  quantityConsumedCheck: check('quantity_consumed > 0'),
+}));
+
+// Payment schedules table - for recurring payments
+export const paymentSchedules = sqliteTable('payment_schedules', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  purchaseOrderId: text('purchase_order_id').notNull().references(() => purchaseOrders.id),
+  dueDate: integer('due_date').notNull(),
+  amountCents: integer('amount_cents').notNull(),
+  status: text('status').notNull(), // PENDING, PAID, OVERDUE, CANCELLED
+  paidAt: integer('paid_at'),
+  paidAmount: integer('paid_amount_cents'),
+  reminderSentAt: integer('reminder_sent_at'),
+  reminderCount: integer('reminder_count').default(0),
+  notes: text('notes'),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+}, (table) => ({
+  tenantIdx: index('payment_schedule_tenant_idx').on(table.tenantId),
+  poIdx: index('payment_schedule_po_idx').on(table.purchaseOrderId),
+  dueDateIdx: index('payment_schedule_due_date_idx').on(table.dueDate),
+  statusIdx: index('payment_schedule_status_idx').on(table.status),
+  tenantStatusIdx: index('payment_schedule_tenant_status_idx').on(table.tenantId, table.status),
+  statusCheck: check("status IN ('PENDING', 'PAID', 'OVERDUE', 'CANCELLED')"),
+  amountCheck: check('amount_cents > 0'),
+}));
+
+// Stock alert configurations - per product with custom thresholds
+export const stockAlertConfigs = sqliteTable('stock_alert_configs', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  productId: text('product_id').notNull().references(() => products.id),
+  locationId: text('location_id').notNull().references(() => locations.id),
+  alertThresholdPercent: real('alert_threshold_percent').notNull(), // e.g., 20 for 20%
+  alertThresholdQuantity: integer('alert_threshold_quantity'), // Alternative: fixed quantity
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+}, (table) => ({
+  tenantIdx: index('stock_alert_config_tenant_idx').on(table.tenantId),
+  productIdx: index('stock_alert_config_product_idx').on(table.productId),
+  locationIdx: index('stock_alert_config_location_idx').on(table.locationId),
+  tenantProductLocationUnique: uniqueIndex('stock_alert_configs_tenant_product_location_unique').on(table.tenantId, table.productId, table.locationId),
+  thresholdCheck: check('alert_threshold_percent > 0 AND alert_threshold_percent <= 100'),
+}));
+
+// Stock alerts - triggered when stock falls below threshold
+export const stockAlerts = sqliteTable('stock_alerts', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  productId: text('product_id').notNull().references(() => products.id),
+  locationId: text('location_id').notNull().references(() => locations.id),
+  currentQuantity: integer('current_quantity').notNull(),
+  thresholdQuantity: integer('threshold_quantity').notNull(),
+  severity: text('severity').notNull(), // LOW, MEDIUM, HIGH, CRITICAL
+  status: text('status').notNull(), // ACTIVE, ACKNOWLEDGED, RESOLVED
+  acknowledgedBy: text('acknowledged_by').references(() => users.id),
+  acknowledgedAt: integer('acknowledged_at'),
+  resolvedAt: integer('resolved_at'),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+}, (table) => ({
+  tenantIdx: index('stock_alert_tenant_idx').on(table.tenantId),
+  productIdx: index('stock_alert_product_idx').on(table.productId),
+  locationIdx: index('stock_alert_location_idx').on(table.locationId),
+  statusIdx: index('stock_alert_status_idx').on(table.status),
+  severityIdx: index('stock_alert_severity_idx').on(table.severity),
+  tenantStatusIdx: index('stock_alert_tenant_status_idx').on(table.tenantId, table.status),
+  createdAtIdx: index('stock_alert_created_at_idx').on(table.createdAt),
+  severityCheck: check("severity IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')"),
+  statusCheck: check("status IN ('ACTIVE', 'ACKNOWLEDGED', 'RESOLVED')"),
+}));
+
+// Stock alert notifications table
+export const stockAlertNotifications = sqliteTable('stock_alert_notifications', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id),
+  alertId: text('alert_id').notNull().references(() => stockAlerts.id, { onDelete: 'cascade' }),
+  notificationType: text('notification_type').notNull(),
+  recipient: text('recipient').notNull(),
+  status: text('status').notNull(),
+  sentAt: integer('sent_at'),
+  deliveredAt: integer('delivered_at'),
+  failedAt: integer('failed_at'),
+  errorMessage: text('error_message'),
+  retryCount: integer('retry_count').notNull().default(0),
+  createdAt: integer('created_at').notNull(),
+}, (table) => ({
+  tenantIdx: index('stock_alert_notification_tenant_idx').on(table.tenantId),
+  alertIdx: index('stock_alert_notification_alert_idx').on(table.alertId),
+  typeIdx: index('stock_alert_notification_type_idx').on(table.notificationType),
+  statusIdx: index('stock_alert_notification_status_idx').on(table.status),
+  sentAtIdx: index('stock_alert_notification_sent_at_idx').on(table.sentAt),
+  typeCheck: check("notification_type IN ('EMAIL', 'SMS', 'PUSH', 'WEBHOOK')"),
+  statusCheck: check("status IN ('PENDING', 'SENT', 'DELIVERED', 'FAILED', 'CANCELLED')"),
+  retryCountCheck: check('retry_count >= 0'),
 }));
 
 // Digital Menu System Relations
@@ -1615,93 +1713,6 @@ export const inventoryConsumptionsRelations = relations(inventoryConsumptions, (
     fields: [inventoryConsumptions.reversedBy],
     references: [users.id],
   }),
-}));
-
-// Stock alert configurations table
-export const stockAlertConfigs = sqliteTable('stock_alert_configs', {
-  id: text('id').primaryKey(),
-  tenantId: text('tenant_id').notNull().references(() => tenants.id),
-  productId: text('product_id').notNull().references(() => products.id),
-  locationId: text('location_id').notNull().references(() => locations.id),
-  lowStockThreshold: integer('low_stock_threshold').notNull(),
-  criticalStockThreshold: integer('critical_stock_threshold').notNull(),
-  outOfStockThreshold: integer('out_of_stock_threshold').notNull().default(0),
-  alertEnabled: integer('alert_enabled', { mode: 'boolean' }).notNull().default(true),
-  emailNotifications: integer('email_notifications', { mode: 'boolean' }).notNull().default(true),
-  smsNotifications: integer('sms_notifications', { mode: 'boolean' }).notNull().default(false),
-  createdBy: text('created_by').notNull().references(() => users.id),
-  createdAt: integer('created_at').notNull(),
-  updatedAt: integer('updated_at').notNull(),
-}, (table) => ({
-  tenantIdx: index('stock_alert_config_tenant_idx').on(table.tenantId),
-  productIdx: index('stock_alert_config_product_idx').on(table.productId),
-  locationIdx: index('stock_alert_config_location_idx').on(table.locationId),
-  tenantProductLocationIdx: index('stock_alert_config_tenant_product_location_idx').on(table.tenantId, table.productId, table.locationId),
-  alertEnabledIdx: index('stock_alert_config_alert_enabled_idx').on(table.alertEnabled),
-  tenantProductLocationUnique: uniqueIndex('stock_alert_configs_tenant_id_product_id_location_id_unique').on(table.tenantId, table.productId, table.locationId),
-  lowStockCheck: check('low_stock_threshold >= critical_stock_threshold'),
-  criticalStockCheck: check('critical_stock_threshold >= out_of_stock_threshold'),
-  outOfStockCheck: check('out_of_stock_threshold >= 0'),
-}));
-
-// Stock alerts table
-export const stockAlerts = sqliteTable('stock_alerts', {
-  id: text('id').primaryKey(),
-  tenantId: text('tenant_id').notNull().references(() => tenants.id),
-  productId: text('product_id').notNull().references(() => products.id),
-  locationId: text('location_id').notNull().references(() => locations.id),
-  alertType: text('alert_type').notNull(),
-  currentStock: integer('current_stock').notNull(),
-  threshold: integer('threshold').notNull(),
-  severity: text('severity').notNull(),
-  message: text('message').notNull(),
-  acknowledged: integer('acknowledged', { mode: 'boolean' }).notNull().default(false),
-  acknowledgedBy: text('acknowledged_by').references(() => users.id),
-  acknowledgedAt: integer('acknowledged_at'),
-  resolved: integer('resolved', { mode: 'boolean' }).notNull().default(false),
-  resolvedAt: integer('resolved_at'),
-  createdAt: integer('created_at').notNull(),
-  updatedAt: integer('updated_at').notNull(),
-}, (table) => ({
-  tenantIdx: index('stock_alert_tenant_idx').on(table.tenantId),
-  productIdx: index('stock_alert_product_idx').on(table.productId),
-  locationIdx: index('stock_alert_location_idx').on(table.locationId),
-  tenantProductLocationIdx: index('stock_alert_tenant_product_location_idx').on(table.tenantId, table.productId, table.locationId),
-  alertTypeIdx: index('stock_alert_alert_type_idx').on(table.alertType),
-  severityIdx: index('stock_alert_severity_idx').on(table.severity),
-  acknowledgedIdx: index('stock_alert_acknowledged_idx').on(table.acknowledged),
-  resolvedIdx: index('stock_alert_resolved_idx').on(table.resolved),
-  createdAtIdx: index('stock_alert_created_at_idx').on(table.createdAt),
-  tenantUnresolvedIdx: index('stock_alert_tenant_unresolved_idx').on(table.tenantId, table.resolved),
-  alertTypeCheck: check("alert_type IN ('LOW_STOCK', 'CRITICAL_STOCK', 'OUT_OF_STOCK')"),
-  severityCheck: check("severity IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')"),
-  currentStockCheck: check('current_stock >= 0'),
-  thresholdCheck: check('threshold >= 0'),
-}));
-
-// Stock alert notifications table
-export const stockAlertNotifications = sqliteTable('stock_alert_notifications', {
-  id: text('id').primaryKey(),
-  tenantId: text('tenant_id').notNull().references(() => tenants.id),
-  alertId: text('alert_id').notNull().references(() => stockAlerts.id, { onDelete: 'cascade' }),
-  notificationType: text('notification_type').notNull(),
-  recipient: text('recipient').notNull(),
-  status: text('status').notNull(),
-  sentAt: integer('sent_at'),
-  deliveredAt: integer('delivered_at'),
-  failedAt: integer('failed_at'),
-  errorMessage: text('error_message'),
-  retryCount: integer('retry_count').notNull().default(0),
-  createdAt: integer('created_at').notNull(),
-}, (table) => ({
-  tenantIdx: index('stock_alert_notification_tenant_idx').on(table.tenantId),
-  alertIdx: index('stock_alert_notification_alert_idx').on(table.alertId),
-  typeIdx: index('stock_alert_notification_type_idx').on(table.notificationType),
-  statusIdx: index('stock_alert_notification_status_idx').on(table.status),
-  sentAtIdx: index('stock_alert_notification_sent_at_idx').on(table.sentAt),
-  typeCheck: check("notification_type IN ('EMAIL', 'SMS', 'PUSH', 'WEBHOOK')"),
-  statusCheck: check("status IN ('PENDING', 'SENT', 'DELIVERED', 'FAILED', 'CANCELLED')"),
-  retryCountCheck: check('retry_count >= 0'),
 }));
 
 // Stock alert relations

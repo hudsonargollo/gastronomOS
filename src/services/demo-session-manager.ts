@@ -53,7 +53,7 @@ export class DemoSessionManager implements IDemoSessionManager {
   private lastResetTime: number;
   private readonly DEMO_TENANT_ID = 'demo-tenant';
   private readonly DEMO_EMAIL_PATTERNS = [
-    '@gastronomos.com',
+    '@pontal-stock.com',
     '@demo-restaurant.com',
     'demo@',
   ];
@@ -227,7 +227,7 @@ export function createDemoSessionManager(
 export function shouldUseDemoExpiration(tenantId: string, email?: string): boolean {
   const isDemoTenant = tenantId === 'demo-tenant';
   const isDemoEmail = email ? 
-    ['@gastronomos.com', '@demo-restaurant.com', 'demo@'].some(pattern => 
+    ['@pontal-stock.com', '@demo-restaurant.com', 'demo@'].some(pattern => 
       email.toLowerCase().includes(pattern.toLowerCase())
     ) : false;
 

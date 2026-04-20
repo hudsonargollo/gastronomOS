@@ -52,6 +52,9 @@ import kitchenRoutes from './routes/kitchen';
 import websocketRoutes from './routes/websocket';
 import menuRoutes from './routes/menu';
 import apiDocsRoutes from './routes/api-docs';
+import paymentSchedulesRoutes from './routes/payment-schedules';
+import stockAlertConfigsRoutes from './routes/stock-alert-configs';
+import dashboardMetricsRoutes from './routes/dashboard-metrics';
 import { handleReceiptProcessingQueue, type ReceiptProcessingJobMessage } from './services/receipt-processor';
 
 // Export Durable Object for WebSocket
@@ -250,6 +253,21 @@ app.use('*', async (c, next) => {
   }
 });
 
+// Root endpoint
+app.get('/', (c) => {
+  return c.json({
+    message: 'Pontal Stock API',
+    version: '1.0.0',
+    status: 'operational',
+    endpoints: {
+      health: '/health',
+      metrics: '/metrics',
+      api: '/api/v1',
+      docs: '/api/v1/docs'
+    }
+  });
+});
+
 // Health check endpoint
 app.get('/health', async (c) => {
   try {
@@ -303,7 +321,7 @@ app.get('/api/status', async (c) => {
 // API routes placeholder
 app.get('/api/v1', (c) => {
   return c.json({ 
-    message: 'GastronomOS Advanced Backend API v1',
+    message: 'Pontal Stock Advanced Backend API v1',
     version: '1.0.0',
     features: [
       'Comprehensive pagination and filtering',
@@ -370,6 +388,9 @@ app.route('/api/v1/payments', paymentsRoutes);
 app.route('/api/v1/commission-reports', commissionReportsRoutes);
 app.route('/api/v1/kitchen', kitchenRoutes);
 app.route('/api/v1/menu', menuRoutes);
+app.route('/api/v1/payment-schedules', paymentSchedulesRoutes);
+app.route('/api/v1/stock-alert-configs', stockAlertConfigsRoutes);
+app.route('/api/v1/dashboard', dashboardMetricsRoutes);
 
 // API Documentation (no authentication required for docs)
 app.route('/api/v1/docs', apiDocsRoutes);

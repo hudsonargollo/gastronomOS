@@ -21,7 +21,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Load language preference from localStorage
-    const savedLanguage = localStorage.getItem('gastronomos-language') as Language;
+    const savedLanguage = localStorage.getItem('pontal-stock-language') as Language;
     if (savedLanguage && ['en', 'pt-BR'].includes(savedLanguage)) {
       setLanguageState(savedLanguage);
     }
@@ -30,7 +30,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('gastronomos-language', lang);
+    localStorage.setItem('pontal-stock-language', lang);
     
     // Force a page refresh to apply new language
     window.location.reload();

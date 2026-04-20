@@ -42,7 +42,7 @@ const initialUsers: User[] = [
   {
     id: 1,
     name: 'John Doe',
-    email: 'john.doe@gastronomos.com',
+    email: 'john.doe@pontal-stock.com',
     role: 'ADMIN',
     location: 'All Locations',
     status: 'active',
@@ -51,7 +51,7 @@ const initialUsers: User[] = [
   {
     id: 2,
     name: 'Sarah Silva',
-    email: 'sarah.s@gastronomos.com',
+    email: 'sarah.s@pontal-stock.com',
     role: 'MANAGER',
     location: 'Restaurante Centro',
     status: 'active',
@@ -60,7 +60,7 @@ const initialUsers: User[] = [
   {
     id: 3,
     name: 'Miguel Santos',
-    email: 'miguel.s@gastronomos.com',
+    email: 'miguel.s@pontal-stock.com',
     role: 'MANAGER',
     location: 'Local Oeste',
     status: 'active',
@@ -69,7 +69,7 @@ const initialUsers: User[] = [
   {
     id: 4,
     name: 'Lisa Rodrigues',
-    email: 'lisa.r@gastronomos.com',
+    email: 'lisa.r@pontal-stock.com',
     role: 'MANAGER',
     location: 'Comissária Central',
     status: 'active',
@@ -78,7 +78,7 @@ const initialUsers: User[] = [
   {
     id: 5,
     name: 'Carlos Lima',
-    email: 'carlos.l@gastronomos.com',
+    email: 'carlos.l@pontal-stock.com',
     role: 'STAFF',
     location: 'Mercado Pop-up',
     status: 'inactive',
@@ -87,7 +87,7 @@ const initialUsers: User[] = [
   {
     id: 6,
     name: 'Ana Costa',
-    email: 'ana.c@gastronomos.com',
+    email: 'ana.c@pontal-stock.com',
     role: 'STAFF',
     location: 'Restaurante Centro',
     status: 'active',
