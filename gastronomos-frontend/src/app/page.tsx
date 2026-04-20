@@ -15,6 +15,10 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 
 export default function LoginPage() {
+  return <LoginPageContent />;
+}
+
+function LoginPageContent() {
   const router = useRouter();
   const { t } = useTranslations();
   const [showPassword, setShowPassword] = React.useState(false);

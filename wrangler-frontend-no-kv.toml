@@ -1,5 +1,5 @@
 name = "gastronomos-frontend"
-main = "src/frontend-worker-complete.ts"
+main = "src/frontend-worker-simple.ts"
 compatibility_date = "2024-01-01"
 
 [env.production]

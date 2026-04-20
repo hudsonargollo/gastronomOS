@@ -100,11 +100,190 @@ app.get('/health', (c) => {
   });
 });
 
+// Direct route for pontal-carapitangui-static
+app.get('/pontal-carapitangui-static', async (c) => {
+  const staticContent = c.env.__STATIC_CONTENT as KVNamespace;
+  if (staticContent) {
+    try {
+      console.log('Attempting to fetch pontal-landing.html from KV');
+      const htmlFile = await staticContent.get('pontal-landing.html', { type: 'arrayBuffer' });
+      if (htmlFile) {
+        console.log('Successfully fetched pontal-landing.html');
+        return new Response(htmlFile, {
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'public, max-age=3600',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
+      } else {
+        console.log('pontal-landing.html not found in KV');
+      }
+    } catch (error) {
+      console.error('Error fetching pontal-landing.html:', error);
+    }
+  }
+  
+  // Fallback: serve inline HTML
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pontal Carapitangui - GastronomOS</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+    .header { background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: white; padding: 3rem 1rem; text-align: center; border-bottom: 4px solid #f97316; }
+    .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 700; }
+    .header p { font-size: 1.25rem; opacity: 0.95; margin-bottom: 0.5rem; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+    h2 { font-size: 2rem; color: #ea580c; margin-bottom: 1.5rem; }
+    .content-box { background: white; padding: 2rem; border-radius: 0.5rem; border: 1px solid #eee; line-height: 1.8; margin-bottom: 2rem; }
+    .content-box p { margin-bottom: 1rem; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .feature-card { background: white; padding: 1.5rem; border-radius: 0.5rem; border: 1px solid #eee; transition: all 0.3s ease; }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2); }
+    .feature-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .feature-card h3 { font-size: 1.25rem; color: #ea580c; margin-bottom: 0.5rem; }
+    .cta-section { background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: white; padding: 3rem 1rem; text-align: center; margin-top: 2rem; border-radius: 0.5rem; }
+    .cta-section h2 { color: white; }
+    .btn { padding: 0.75rem 2rem; font-size: 1rem; font-weight: 600; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.3s ease; }
+    .btn-primary { background: #f97316; color: #ea580c; }
+    .btn-primary:hover { background: #fb923c; transform: scale(1.05); }
+    footer { background: #ea580c; color: white; padding: 2rem 1rem; text-align: center; border-top: 1px solid #f97316; opacity: 0.9; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>🍽️ Pontal Carapitangui</h1>
+    <p>Sistema Inteligente de Gestão para Clubes de Praia</p>
+    <p>Barra Grande, Maraú - BA</p>
+  </header>
+  
+  <div class="container">
+    <section>
+      <h2>Visão Geral do Sistema</h2>
+      <div class="content-box">
+        <p>O <strong>GastronomOS</strong> é uma solução completa de gestão para estabelecimentos de alimentação e bebidas, especialmente desenvolvida para clubes de praia como o Pontal Carapitangui.</p>
+        <p>Nosso sistema integra todas as operações do seu estabelecimento em uma única plataforma: desde o atendimento ao cliente até a gestão financeira, passando por controle de estoque e análises de desempenho.</p>
+        <p>Com a tecnologia de <strong>Menu Digital via QR Code</strong>, seus clientes podem fazer pedidos diretamente de suas mesas, reduzindo o tempo de atendimento e melhorando a experiência.</p>
+        <p>Tudo funciona em <strong>tempo real</strong>, com sincronização automática entre cozinha, garçons, caixa e gerência.</p>
+      </div>
+    </section>
+    
+    <section>
+      <h2>Funcionalidades Principais</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3>Menu Digital QR</h3>
+          <p>Clientes acessam o cardápio via QR code. Sem contato, sem papel, sempre atualizado.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">👨‍💼</div>
+          <h3>Painel do Garçom</h3>
+          <p>Gerenciamento eficiente de pedidos com rastreamento em tempo real e comissões automáticas.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🍳</div>
+          <h3>Display da Cozinha</h3>
+          <p>Visualização clara dos pedidos com priorização automática e status em tempo real.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💳</div>
+          <h3>Painel do Caixa</h3>
+          <p>Processamento de pagamentos seguro com suporte a Pix, cartão e múltiplas formas de pagamento.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Dashboard Analítico</h3>
+          <p>Relatórios de vendas, desempenho e análises para decisões estratégicas.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📦</div>
+          <h3>Gestão de Estoque</h3>
+          <p>Controle de inventário em tempo real com alertas de baixo estoque.</p>
+        </div>
+      </div>
+    </section>
+    
+    <section>
+      <h2>Benefícios para Pontal Carapitangui</h2>
+      <ul style="list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+        <li style="background: white; padding: 1.5rem; border-radius: 0.5rem; border: 2px solid #f97316;"><strong style="color: #f97316;">✓</strong> Aumento de 40% na eficiência operacional</li>
+        <li style="background: white; padding: 1.5rem; border-radius: 0.5rem; border: 2px solid #f97316;"><strong style="color: #f97316;">✓</strong> Redução de erros de pedidos em 95%</li>
+        <li style="background: white; padding: 1.5rem; border-radius: 0.5rem; border: 2px solid #f97316;"><strong style="color: #f97316;">✓</strong> Melhor experiência do cliente</li>
+        <li style="background: white; padding: 1.5rem; border-radius: 0.5rem; border: 2px solid #f97316;"><strong style="color: #f97316;">✓</strong> Rastreamento completo de vendas</li>
+        <li style="background: white; padding: 1.5rem; border-radius: 0.5rem; border: 2px solid #f97316;"><strong style="color: #f97316;">✓</strong> Integração com sistemas de pagamento</li>
+        <li style="background: white; padding: 1.5rem; border-radius: 0.5rem; border: 2px solid #f97316;"><strong style="color: #f97316;">✓</strong> Relatórios detalhados e em tempo real</li>
+      </ul>
+    </section>
+    
+    <section>
+      <h2>Especificações Técnicas</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <h3>Infraestrutura</h3>
+          <ul style="list-style: none;">
+            <li>✓ Cloudflare Workers (Backend)</li>
+            <li>✓ Next.js (Frontend)</li>
+            <li>✓ Cloudflare D1 (Banco de Dados)</li>
+            <li>✓ 99.9% de Uptime</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <h3>Segurança</h3>
+          <ul style="list-style: none;">
+            <li>✓ Autenticação JWT</li>
+            <li>✓ Criptografia SSL/TLS</li>
+            <li>✓ Controle de Acesso por Função</li>
+            <li>✓ Auditoria Completa</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <h3>Integrações</h3>
+          <ul style="list-style: none;">
+            <li>✓ Mercado Pago</li>
+            <li>✓ Pix</li>
+            <li>✓ Múltiplas Formas de Pagamento</li>
+            <li>✓ Sincronização em Tempo Real</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+  <section class="cta-section">
+    <div class="container">
+      <h2>Pronto para Transformar Seu Negócio?</h2>
+      <p>Entre em contato conosco para uma demonstração personalizada do GastronomOS.</p>
+      <button class="btn btn-primary">Solicitar Demonstração</button>
+    </div>
+  </section>
+  
+  <footer>
+    <p>© 2026 GastronomOS - Solução Inteligente para Gestão de Estabelecimentos</p>
+    <p>Desenvolvido com tecnologia de ponta para o Pontal Carapitangui</p>
+  </footer>
+</body>
+</html>`;
+  
+  return new Response(html, {
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600',
+    },
+  });
+});
+
 // Static file serving with proper fallback
 app.get('*', async (c) => {
   try {
     const url = new URL(c.req.url);
     let pathname = url.pathname;
+    
+    console.log(`Serving path: ${pathname}`);
     
     // Handle root path
     if (pathname === '/') {
@@ -134,6 +313,7 @@ app.get('*', async (c) => {
             const file = await staticContent.get(key, { type: 'arrayBuffer' });
             if (file) {
               const contentType = getContentType(pathname);
+              console.log(`Found file in KV: ${key}`);
               return new Response(file, {
                 headers: {
                   'Content-Type': contentType,
@@ -151,8 +331,32 @@ app.get('*', async (c) => {
       }
     }
     
-    // Serve simple fallback pages
+    // Try to serve HTML files for app routes (check KV first)
+    const htmlFileName = pathname === '/' ? 'index.html' : `${pathname}.html`;
+    const htmlKey = htmlFileName.slice(1); // Remove leading slash
+    
+    if (staticContent) {
+      try {
+        console.log(`Trying to fetch HTML: ${htmlKey}`);
+        const htmlFile = await staticContent.get(htmlKey, { type: 'arrayBuffer' });
+        if (htmlFile) {
+          console.log(`Found HTML in KV: ${htmlKey}`);
+          return new Response(htmlFile, {
+            headers: {
+              'Content-Type': 'text/html; charset=utf-8',
+              'Cache-Control': 'public, max-age=3600',
+              'Access-Control-Allow-Origin': '*',
+            },
+          });
+        }
+      } catch (error) {
+        console.error(`Error fetching HTML file ${htmlKey}:`, error);
+      }
+    }
+    
+    // Serve simple fallback pages only if not found in KV
     if (pathname === '/index.html' || pathname === '/') {
+      console.log('Serving login page fallback');
       return new Response(getSimpleLoginPage(), {
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
@@ -161,26 +365,8 @@ app.get('*', async (c) => {
       });
     }
     
-    // Handle dashboard and other app routes
-    if (pathname.startsWith('/dashboard') || 
-        pathname.startsWith('/inventory') || 
-        pathname.startsWith('/purchasing') || 
-        pathname.startsWith('/analytics') || 
-        pathname.startsWith('/locations') || 
-        pathname.startsWith('/transfers') || 
-        pathname.startsWith('/allocations') || 
-        pathname.startsWith('/users') || 
-        pathname.startsWith('/settings')) {
-      
-      return new Response(getSimpleDashboard(), {
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8',
-          'Cache-Control': 'public, max-age=3600',
-        },
-      });
-    }
-    
     // 404 for other files
+    console.log(`404 for path: ${pathname}`);
     return new Response(get404Page(), {
       status: 404,
       headers: {
