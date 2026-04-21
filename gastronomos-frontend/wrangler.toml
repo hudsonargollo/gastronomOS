@@ -1,9 +1,20 @@
-name = "gastronomos-frontend"
+name = "pontal-stock-frontend"
 pages_build_output_dir = "out"
 compatibility_date = "2024-01-01"
 
+# Development environment
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+# Staging environment
+[env.staging]
+vars = { ENVIRONMENT = "staging" }
+
+# Production environment
 [env.production]
+vars = { ENVIRONMENT = "production" }
 routes = [
-  { pattern = "example.com/api/*", zone_name = "example.com" }
+  { pattern = "pontal-stock.com/*", zone_name = "pontal-stock.com" },
+  { pattern = "api.pontal-stock.com/*", zone_name = "pontal-stock.com" }
 ]
 
