@@ -88,7 +88,7 @@ function LoginPageContent() {
             <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
               Pontal Stock
             </h1>
-            <p className="text-slate-600 text-sm mt-1">Sistema de Gestão de Estoque</p>
+            <p className="text-slate-600 text-sm mt-1">Sistema de Gestão de Estoque v2</p>
           </div>
 
           {/* Login Card */}
