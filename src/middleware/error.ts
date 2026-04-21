@@ -12,7 +12,7 @@ export function errorHandler(): MiddlewareHandler {
     try {
       await next();
     } catch (error) {
-      console.error('Request error:', error);
+      console.error('Request error:', error, error instanceof Error ? error.stack : '');
 
       // Generate request ID for tracking
       const requestId = crypto.randomUUID();

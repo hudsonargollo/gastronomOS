@@ -236,27 +236,22 @@ app.use('*', async (c, next) => {
 // JWT service initialization middleware
 app.use('*', async (c, next) => {
   try {
-    // Validate JWT configuration on startup
-    try {
-      validateJWTConfig(c.env.JWT_SECRET, c.env.ENVIRONMENT);
-    } catch (configError) {
-      console.warn('JWT configuration warning:', configError);
-      // Continue anyway - use defaults
-    }
-    
     // Create JWT service instance and attach to context
-    try {
-      const jwtService = createJWTService(c.env.JWT_SECRET || 'demo-secret', c.env.ENVIRONMENT || 'production');
-      c.set('jwtService', jwtService);
-    } catch (serviceError) {
-      console.warn('JWT service creation warning:', serviceError);
-      // Continue without JWT service - demo mode will work
-    }
+    // Use a default secret if not provided to ensure demo login works
+    const secret = c.env.JWT_SECRET || 'pontal-stock-demo-secret-minimum-32-chars-required';
+    const jwtService = createJWTService(secret, c.env.ENVIRONMENT || 'production');
+    c.set('jwtService', jwtService);
     
     return await next();
   } catch (error) {
     console.error('JWT middleware error:', error);
-    // Don't return error - let routes handle it
+    // Create a fallback JWT service with a default secret
+    try {
+      const fallbackService = createJWTService('pontal-stock-demo-secret-minimum-32-chars-required', 'production');
+      c.set('jwtService', fallbackService);
+    } catch (fallbackError) {
+      console.error('Fallback JWT service creation failed:', fallbackError);
+    }
     return await next();
   }
 });

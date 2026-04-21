@@ -251,46 +251,72 @@ auth.post('/login', async (c) => {
     
     // Handle demo login
     if (body.email === 'demo@pontal-stock.com' && body.password === 'demo123') {
-      const jwtService = c.get('jwtService');
-      const demoSessionManager = c.get('demoSessionManager');
-      
-      // Create demo user response
-      const demoUser = {
-        id: 'demo-user-id',
-        email: 'demo@pontal-stock.com',
-        role: 'ADMIN' as UserRole,
-        tenantId: 'demo-tenant-id',
-        locationId: 'demo-location-id'
-      };
+      try {
+        const jwtService = c.get('jwtService');
+        const demoSessionManager = c.get('demoSessionManager');
+        
+        // Create demo user response
+        const demoUser = {
+          id: 'demo-user-id',
+          email: 'demo@pontal-stock.com',
+          role: 'ADMIN' as UserRole,
+          tenantId: 'demo-tenant-id',
+          locationId: 'demo-location-id'
+        };
 
-      // Generate JWT token for demo user with shorter expiration
-      // Requirements: 8.5 - Configure shorter expiration times for demo sessions
-      const demoExpiration = demoSessionManager?.getDemoSessionExpiration?.() || 28800;
-      const jwtClaims = {
-        sub: demoUser.id,
-        tenant_id: demoUser.tenantId,
-        role: demoUser.role,
-        location_id: demoUser.locationId,
-      };
-      
-      const token = jwtService ? await jwtService.sign(jwtClaims, demoExpiration) : 'demo-token-' + Date.now();
+        // Generate JWT token for demo user with shorter expiration
+        // Requirements: 8.5 - Configure shorter expiration times for demo sessions
+        const demoExpiration = demoSessionManager?.getDemoSessionExpiration?.() || 28800;
+        const jwtClaims = {
+          sub: demoUser.id,
+          tenant_id: demoUser.tenantId,
+          role: demoUser.role,
+          location_id: demoUser.locationId,
+        };
+        
+        let token: string;
+        if (jwtService) {
+          try {
+            token = await jwtService.sign(jwtClaims, demoExpiration);
+          } catch (tokenError) {
+            console.error('Failed to sign JWT token:', tokenError);
+            // Fallback token if JWT signing fails
+            token = 'demo-token-' + Date.now();
+          }
+        } else {
+          token = 'demo-token-' + Date.now();
+        }
 
-      // Log demo login if audit service is available
-      if (auditService) {
-        await auditService.logAuthenticationEvent('LOGIN', {
-          ...auditContext,
-          tenantId: demoUser.tenantId,
-          userId: demoUser.id,
-          resource: `Demo user login (session expires in ${demoExpiration / 3600} hours)`
-        });
+        // Log demo login if audit service is available
+        if (auditService) {
+          try {
+            await auditService.logAuthenticationEvent('LOGIN', {
+              ...auditContext,
+              tenantId: demoUser.tenantId,
+              userId: demoUser.id,
+              resource: `Demo user login (session expires in ${demoExpiration / 3600} hours)`
+            });
+          } catch (auditError) {
+            console.warn('Failed to log demo login:', auditError);
+            // Continue even if audit logging fails
+          }
+        }
+
+        const response: LoginResponse = {
+          token,
+          user: demoUser,
+        };
+
+        return c.json(response, 200);
+      } catch (demoLoginError) {
+        console.error('Demo login error:', demoLoginError);
+        // Return error response for demo login
+        return c.json(createErrorResponse(
+          'Demo Login Failed',
+          'An error occurred during demo login',
+          'DEMO_LOGIN_ERROR'
+        ), 500);
       }
-
-      const response: LoginResponse = {
-        token,
-        user: demoUser,
-      };
-
-      return c.json(response, 200);
     }
     
     // Validate regular login data
