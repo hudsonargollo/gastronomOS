@@ -145,9 +145,6 @@
     "approved": "Approved",
     "delivered": "Delivered"
   },
-    "suppliersCount": "suppliers",
-    "processed": "processed"
-  },
   "transfers": {
     "title": "Transfers",
     "subtitle": "Manage transfers between restaurant locations",
