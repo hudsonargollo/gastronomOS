@@ -15,7 +15,6 @@ import { motion } from 'framer-motion';
 import { AnimatedPage } from '@/components/ui/animated-page';
 import { PurchaseOrderWizard } from '@/components/wizards/purchase-order-wizard';
 import { ReceiptProcessingWizard } from '@/components/wizards/receipt-processing-wizard';
-import { useProducts, useCategories } from '@/hooks/use-crud';
 import { staggerContainer, listItemVariants } from '@/lib/animation-utils';
 
 export default function PurchasingPage() {
@@ -23,11 +22,9 @@ export default function PurchasingPage() {
   const [showPOWizard, setShowPOWizard] = useState(false);
   const [showReceiptWizard, setShowReceiptWizard] = useState(false);
 
-  // Use enhanced CRUD hooks for data - using existing hooks as placeholders
-  const { data: purchaseOrders, loading: poLoading } = useProducts({ 
-    limit: 5 
-  });
-  const { data: suppliers } = useCategories({ active: true });
+  // Static data for static export
+  const purchaseOrders = [];
+  const suppliers = [];
 
   const breadcrumbs = [
     { label: t('navigation.dashboard'), href: '/dashboard' },
@@ -41,7 +38,7 @@ export default function PurchasingPage() {
       icon: FileText,
       href: '/purchasing/orders',
       color: 'bg-blue-500',
-      stats: `${purchaseOrders?.length || 23} ${t('purchasing.activeOrders')}`,
+      stats: `23 ${t('purchasing.activeOrders')}`,
       trend: '+5%',
       trendUp: true,
     },
@@ -51,7 +48,7 @@ export default function PurchasingPage() {
       icon: Building2,
       href: '/purchasing/suppliers',
       color: 'bg-purple-500',
-      stats: `${suppliers?.length || 47} ${t('purchasing.suppliersCount')}`,
+      stats: `47 ${t('purchasing.suppliersCount')}`,
       trend: '+2',
       trendUp: true,
     },
@@ -88,18 +85,16 @@ export default function PurchasingPage() {
       icon: AlertTriangle,
       href: '/purchasing/orders?filter=pending',
       color: 'bg-orange-500',
-      badge: purchaseOrders?.length || 0,
+      badge: 0,
     },
   ];
 
   const handlePOComplete = (data: any) => {
     setShowPOWizard(false);
-    // Refresh purchase orders data or show success message
   };
 
   const handleReceiptComplete = (data: any) => {
     setShowReceiptWizard(false);
-    // Refresh receipts data or show success message
   };
 
   return (
@@ -232,35 +227,6 @@ export default function PurchasingPage() {
                 })}
               </ResponsiveGrid>
             </motion.div>
-
-            {/* Pending Orders Alert */}
-            {!poLoading && purchaseOrders && purchaseOrders.length > 0 && (
-              <motion.div variants={listItemVariants}>
-                <Card className="border-orange-200 bg-orange-50">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-orange-800">
-                      <AlertTriangle className="h-5 w-5" />
-                      Pending Purchase Orders
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-orange-700 mb-4">
-                      {purchaseOrders.length} purchase orders are pending approval and need your attention.
-                    </p>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href="/purchasing/orders?filter=pending">
-                          View Pending Orders
-                        </Link>
-                      </Button>
-                      <Button size="sm" onClick={() => setShowPOWizard(true)}>
-                        Create New Order
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
           </motion.div>
         </ResponsiveContainer>
 
