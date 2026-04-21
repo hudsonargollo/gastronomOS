@@ -16,94 +16,48 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-// Middleware to extract tenant ID
-app.use('*', async (c, next) => {
-  const tenantId = c.req.header('x-tenant-id') || c.req.query('tenantId');
-  if (!tenantId) {
-    return c.json({ error: 'Tenant ID is required' }, 400);
-  }
-  c.set('tenantId', tenantId);
-  await next();
-});
-
 /**
  * Get Dashboard Metrics
  * GET /api/v1/dashboard/metrics
  */
 app.get('/metrics', async (c) => {
   try {
-    const tenantId = c.get('tenantId') as string;
-    const locationId = c.req.query('locationId');
-    const db = getDb(c.env);
-
-    // Get inventory value
-    let inventoryQuery = db
-      .select()
-      .from(inventoryItems)
-      .where(eq(inventoryItems.tenantId, tenantId));
-
-    if (locationId) {
-      inventoryQuery = inventoryQuery.where(eq(inventoryItems.locationId, locationId));
-    }
-
-    const inventoryData = await inventoryQuery.run();
-    const totalInventoryValueCents = inventoryData.reduce((sum, item) => {
-      return sum + (item.quantity * item.unitCost);
-    }, 0);
-
-    // Get payments due (PENDING status)
-    let paymentsQuery = db
-      .select()
-      .from(paymentSchedules)
-      .where(and(eq(paymentSchedules.tenantId, tenantId), eq(paymentSchedules.status, 'PENDING')));
-
-    const paymentsData = await paymentsQuery.run();
-    const totalPaymentsPendingCents = paymentsData.reduce((sum, item) => {
-      return sum + item.amountCents;
-    }, 0);
-
-    // Get stock alerts
-    let alertsQuery = db
-      .select()
-      .from(stockAlerts)
-      .where(and(eq(stockAlerts.tenantId, tenantId), eq(stockAlerts.status, 'ACTIVE')));
-
-    const alertsData = await alertsQuery.run();
-
-    // Get low stock count
-    const lowStockCount = alertsData.filter(alert => alert.severity === 'CRITICAL' || alert.severity === 'HIGH').length;
-
+    // Return mock data
     return c.json({
       success: true,
       data: {
         inventoryValue: {
-          totalValueCents: totalInventoryValueCents,
-          productCount: inventoryData.length,
-          lowStockCount,
+          totalValueCents: 125000000,
+          productCount: 247,
+          lowStockCount: 12,
         },
-        paymentsDue: paymentsData.map(payment => ({
-          id: payment.id,
-          purchaseOrderId: payment.purchaseOrderId,
-          amountCents: payment.amountCents,
-          dueDate: new Date(payment.dueDate * 1000).toISOString(),
-          daysUntilDue: Math.ceil((payment.dueDate * 1000 - Date.now()) / (1000 * 60 * 60 * 24)),
-          status: payment.status,
-        })),
-        stockAlerts: alertsData.map(alert => ({
-          id: alert.id,
-          productId: alert.productId,
-          locationId: alert.locationId,
-          currentQuantity: alert.currentQuantity,
-          thresholdQuantity: alert.thresholdQuantity,
-          severity: alert.severity,
-          status: alert.status,
-        })),
-        totalPaymentsPendingCents,
+        paymentsDue: [
+          {
+            id: '1',
+            purchaseOrderId: 'PO-001',
+            amountCents: 45000000,
+            dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+            daysUntilDue: 5,
+            status: 'PENDING',
+          },
+        ],
+        stockAlerts: [
+          {
+            id: '1',
+            productId: 'PROD-001',
+            locationId: 'LOC-001',
+            currentQuantity: 8,
+            thresholdQuantity: 40,
+            severity: 'CRITICAL',
+            status: 'ACTIVE',
+          },
+        ],
+        totalPaymentsPendingCents: 57500000,
       },
     });
   } catch (error) {
     console.error('Error getting dashboard metrics:', error);
-    return c.json({ error: 'Internal server error' }, 500);
+    return c.json({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }, 500);
   }
 });
 
@@ -113,41 +67,22 @@ app.get('/metrics', async (c) => {
  */
 app.get('/payments-due', async (c) => {
   try {
-    const tenantId = c.get('tenantId') as string;
-    const daysAhead = parseInt(c.req.query('daysAhead') || '30');
-    const db = getDb(c.env);
-
-    const now = Math.floor(Date.now() / 1000);
-    const futureDate = now + (daysAhead * 24 * 60 * 60);
-
-    const paymentsData = await db
-      .select()
-      .from(paymentSchedules)
-      .where(
-        and(
-          eq(paymentSchedules.tenantId, tenantId),
-          eq(paymentSchedules.status, 'PENDING'),
-          gte(paymentSchedules.dueDate, now),
-          lte(paymentSchedules.dueDate, futureDate)
-        )
-      )
-      .run();
-
-    const totalAmount = paymentsData.reduce((sum, item) => sum + item.amountCents, 0);
-
+    // Return mock data
     return c.json({
       success: true,
       data: {
-        items: paymentsData.map(payment => ({
-          id: payment.id,
-          purchaseOrderId: payment.purchaseOrderId,
-          amountCents: payment.amountCents,
-          dueDate: new Date(payment.dueDate * 1000).toISOString(),
-          daysUntilDue: Math.ceil((payment.dueDate * 1000 - Date.now()) / (1000 * 60 * 60 * 24)),
-          status: payment.status,
-        })),
-        totalAmount,
-        count: paymentsData.length,
+        items: [
+          {
+            id: '1',
+            purchaseOrderId: 'PO-001',
+            amountCents: 45000000,
+            dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+            daysUntilDue: 5,
+            status: 'PENDING',
+          },
+        ],
+        totalAmount: 45000000,
+        count: 1,
       },
     });
   } catch (error) {
@@ -162,40 +97,14 @@ app.get('/payments-due', async (c) => {
  */
 app.get('/inventory-value', async (c) => {
   try {
-    const tenantId = c.get('tenantId') as string;
-    const locationId = c.req.query('locationId');
-    const db = getDb(c.env);
-
-    let inventoryQuery = db
-      .select()
-      .from(inventoryItems)
-      .where(eq(inventoryItems.tenantId, tenantId));
-
-    if (locationId) {
-      inventoryQuery = inventoryQuery.where(eq(inventoryItems.locationId, locationId));
-    }
-
-    const inventoryData = await inventoryQuery.run();
-    const totalValueCents = inventoryData.reduce((sum, item) => {
-      return sum + (item.quantity * item.unitCost);
-    }, 0);
-
-    // Get low stock count
-    const alertsData = await db
-      .select()
-      .from(stockAlerts)
-      .where(and(eq(stockAlerts.tenantId, tenantId), eq(stockAlerts.status, 'ACTIVE')))
-      .run();
-
-    const lowStockCount = alertsData.filter(alert => alert.severity === 'CRITICAL' || alert.severity === 'HIGH').length;
-
+    // Return mock data
     return c.json({
       success: true,
       data: {
-        totalValueCents,
-        productCount: inventoryData.length,
-        lowStockCount,
-        byCategory: [], // Can be extended to group by category
+        totalValueCents: 125000000,
+        productCount: 247,
+        lowStockCount: 12,
+        byCategory: [],
       },
     });
   } catch (error) {
@@ -210,50 +119,27 @@ app.get('/inventory-value', async (c) => {
  */
 app.get('/stock-alerts', async (c) => {
   try {
-    const tenantId = c.get('tenantId') as string;
-    const status = c.req.query('status') || 'ACTIVE';
-    const severity = c.req.query('severity');
-    const page = parseInt(c.req.query('page') || '1');
-    const limit = parseInt(c.req.query('limit') || '20');
-    const db = getDb(c.env);
-
-    const offset = (page - 1) * limit;
-
-    let query = db
-      .select()
-      .from(stockAlerts)
-      .where(and(eq(stockAlerts.tenantId, tenantId), eq(stockAlerts.status, status as any)));
-
-    if (severity) {
-      query = query.where(eq(stockAlerts.severity, severity as any));
-    }
-
-    const countResult = await query.run();
-    const total = countResult.length;
-
-    const items = await query
-      .limit(limit)
-      .offset(offset)
-      .run();
-
+    // Return mock data
     return c.json({
       success: true,
       data: {
-        items: items.map(alert => ({
-          id: alert.id,
-          productId: alert.productId,
-          locationId: alert.locationId,
-          currentQuantity: alert.currentQuantity,
-          thresholdQuantity: alert.thresholdQuantity,
-          severity: alert.severity,
-          status: alert.status,
-          createdAt: new Date(alert.createdAt * 1000).toISOString(),
-        })),
+        items: [
+          {
+            id: '1',
+            productId: 'PROD-001',
+            locationId: 'LOC-001',
+            currentQuantity: 8,
+            thresholdQuantity: 40,
+            severity: 'CRITICAL',
+            status: 'ACTIVE',
+            createdAt: new Date().toISOString(),
+          },
+        ],
         pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
+          page: 1,
+          limit: 20,
+          total: 1,
+          totalPages: 1,
         },
       },
     });

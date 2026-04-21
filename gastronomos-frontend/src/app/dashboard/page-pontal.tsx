@@ -6,17 +6,15 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTheme } from '@/contexts/theme-context';
 import { useBranding } from '@/contexts/branding-context';
-import { apiClient } from '@/lib/api';
+import { useApiClient } from '@/hooks/use-api-client';
 import {
   Package,
   AlertTriangle,
   DollarSign,
   TrendingUp,
   Clock,
-  CheckCircle,
   AlertCircle,
   ShoppingCart,
   Plus,
@@ -57,6 +55,7 @@ interface DashboardMetrics {
 export default function PontalDashboard() {
   const { palette } = useTheme();
   const { branding } = useBranding();
+  const apiClient = useApiClient();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -67,9 +66,9 @@ export default function PontalDashboard() {
   const loadDashboardMetrics = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.getDashboardMetrics();
+      const response = await apiClient.getDashboardMetrics() as any;
       
-      if (response.success && response.data) {
+      if (response?.success && response?.data) {
         setMetrics(response.data);
       } else {
         // Fallback to mock data if API fails

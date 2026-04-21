@@ -12,6 +12,7 @@ import { CacheService, cacheMiddleware } from './services/caching';
 import { ScheduledJobsService } from './services/scheduled-jobs';
 import { WebhookSystemService } from './services/webhook-system';
 import { ComprehensiveAuditService } from './services/comprehensive-audit';
+import { authenticate } from './middleware/auth';
 import categoryRoutes from './routes/categories';
 import inventoryRoutes from './routes/inventory';
 import authRoutes from './routes/auth';

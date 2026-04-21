@@ -82,6 +82,7 @@
     "@types/react-dom": "^18",
     "@types/react-window": "^1.8.8",
     "@vitest/ui": "^4.0.17",
+    "autoprefixer": "^10.5.0",
     "eslint": "^9",
     "eslint-config-next": "^15.1.0",
     "fast-check": "^4.5.3",
