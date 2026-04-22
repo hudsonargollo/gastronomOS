@@ -6,15 +6,8 @@
  */
 
 import { Hono } from 'hono';
-import { eq, and, gte, lte } from 'drizzle-orm';
-import { getDb } from '../db';
-import { paymentSchedules, stockAlerts, inventoryItems, products } from '../db/schema';
 
-type Bindings = {
-  DB: D1Database;
-};
-
-const app = new Hono<{ Bindings: Bindings }>();
+const app = new Hono();
 
 /**
  * Get Dashboard Metrics

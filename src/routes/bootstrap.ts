@@ -1,9 +1,8 @@
 import { Hono } from 'hono';
 import { drizzle } from 'drizzle-orm/d1';
-import * as schema from '../db/schema';
-import { createUserService } from '../services/user';
-import { createTenantService } from '../services/tenant';
-import { createJWTService } from '../services/jwt';
+import { createUserService, IUserService } from '../services/user';
+import { createTenantService, ITenantService } from '../services/tenant';
+import { createJWTService, IJWTService } from '../services/jwt';
 import { createErrorResponse } from '../utils';
 import { z } from 'zod';
 
@@ -14,6 +13,13 @@ interface Env extends Record<string, unknown> {
   ENVIRONMENT?: string;
 }
 
+// Extend Hono context with services
+type Variables = {
+  jwtService?: IJWTService;
+  userService?: IUserService;
+  tenantService?: ITenantService;
+};
+
 // Validation schema for bootstrap
 const bootstrapSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -23,7 +29,7 @@ const bootstrapSchema = z.object({
 });
 
 // Initialize bootstrap router
-const bootstrap = new Hono<{ Bindings: Env }>();
+const bootstrap = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 /**
  * POST /bootstrap - Create tenant and admin user in one step
@@ -49,10 +55,36 @@ bootstrap.post('/', async (c) => {
       console.log(`[Bootstrap] New account registration: ${validatedData.email}`);
     }
 
-    const db = drizzle(c.env.DB, { schema });
-    const tenantService = createTenantService(db as any);
-    const userService = createUserService(db as any);
-    const jwtService = createJWTService(c.env.JWT_SECRET, c.env.ENVIRONMENT);
+    // Get services from context or create them
+    let tenantService = c.get('tenantService');
+    let userService = c.get('userService');
+    let jwtService = c.get('jwtService');
+
+    // If services aren't available, create them
+    if (!tenantService || !userService || !jwtService) {
+      console.log('[Bootstrap] Services not in context, creating new instances...');
+      
+      try {
+        const db = drizzle(c.env.DB);
+        
+        if (!tenantService) {
+          tenantService = createTenantService(db as any);
+        }
+        if (!userService) {
+          userService = createUserService(db as any);
+        }
+        if (!jwtService) {
+          jwtService = createJWTService(c.env.JWT_SECRET, c.env.ENVIRONMENT);
+        }
+      } catch (initError) {
+        console.error('[Bootstrap] Service initialization error:', initError);
+        return c.json(createErrorResponse(
+          'Service Initialization Failed',
+          'Failed to initialize services',
+          'SERVICE_ERROR'
+        ), 500);
+      }
+    }
 
     // Step 1: Create or get tenant
     let tenant;
@@ -64,9 +96,12 @@ bootstrap.post('/', async (c) => {
           name: validatedData.tenantName,
           slug: validatedData.tenantSlug,
         });
+        console.log('[Bootstrap] Created tenant:', tenant.id);
+      } else {
+        console.log('[Bootstrap] Tenant already exists:', tenant.id);
       }
     } catch (error) {
-      console.error('Tenant creation error:', error);
+      console.error('[Bootstrap] Tenant creation error:', error);
       return c.json(createErrorResponse(
         'Tenant Creation Failed',
         error instanceof Error ? error.message : 'Failed to create tenant',
@@ -82,9 +117,11 @@ bootstrap.post('/', async (c) => {
         password: validatedData.password,
         role: 'ADMIN',
       });
+      console.log('[Bootstrap] Created user:', user.id);
     } catch (error) {
       // Check if user already exists
       if (error instanceof Error && error.message.includes('already exists')) {
+        console.log('[Bootstrap] User already exists:', validatedData.email);
         return c.json(createErrorResponse(
           'User Already Exists',
           'An account with this email already exists',
@@ -92,7 +129,7 @@ bootstrap.post('/', async (c) => {
         ), 409);
       }
       
-      console.error('User creation error:', error);
+      console.error('[Bootstrap] User creation error:', error);
       return c.json(createErrorResponse(
         'User Creation Failed',
         error instanceof Error ? error.message : 'Failed to create user',
@@ -101,11 +138,21 @@ bootstrap.post('/', async (c) => {
     }
 
     // Step 3: Generate JWT token
-    const token = await jwtService.sign({
-      sub: user.id,
-      tenant_id: user.tenantId,
-      role: user.role,
-    });
+    let token;
+    try {
+      token = await jwtService.sign({
+        sub: user.id,
+        tenant_id: user.tenantId,
+        role: user.role,
+      });
+    } catch (tokenError) {
+      console.error('[Bootstrap] Token generation error:', tokenError);
+      return c.json(createErrorResponse(
+        'Token Generation Failed',
+        'Failed to generate JWT token',
+        'TOKEN_ERROR'
+      ), 500);
+    }
 
     // Return success response
     return c.json({
@@ -125,10 +172,15 @@ bootstrap.post('/', async (c) => {
     }, 201);
 
   } catch (error) {
-    console.error('Bootstrap error:', error);
+    console.error('[Bootstrap] Bootstrap error:', error);
+    if (error instanceof Error) {
+      console.error('[Bootstrap] Error message:', error.message);
+      console.error('[Bootstrap] Error stack:', error.stack);
+    }
 
     // Handle validation errors
     if (error instanceof z.ZodError) {
+      console.error('[Bootstrap] Validation errors:', error.errors);
       return c.json(createErrorResponse(
         'Validation Error',
         error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', '),
@@ -136,10 +188,11 @@ bootstrap.post('/', async (c) => {
       ), 400);
     }
 
-    // Generic error response
+    // Generic error response with more details
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return c.json(createErrorResponse(
       'Bootstrap Failed',
-      'An error occurred during bootstrap',
+      `An error occurred during bootstrap: ${errorMessage}`,
       'BOOTSTRAP_ERROR'
     ), 500);
   }

@@ -203,8 +203,8 @@ export class ApiMonitoringService {
     const startTime = Date.now();
     
     try {
-      // Simple query to test database connectivity
-      await db.execute('SELECT 1');
+      // Simple query to test database connectivity using D1 API
+      const result = await db.prepare('SELECT 1 as test').first();
       
       const responseTime = Date.now() - startTime;
       

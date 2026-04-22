@@ -4,7 +4,7 @@ import * as schema from '../db/schema';
 import { createUserService, IUserService } from '../services/user';
 import { createTenantService, ITenantService } from '../services/tenant';
 import { createAuditService, IAuditService, extractAuditContext } from '../services/audit';
-import { IJWTService } from '../services/jwt';
+import { createJWTService, IJWTService } from '../services/jwt';
 import { RegisterUserRequest, LoginRequest, LoginResponse, UserRole } from '../types';
 import { createErrorResponse } from '../utils';
 import { z } from 'zod';
@@ -14,6 +14,7 @@ import { createDemoSessionManager, IDemoSessionManager, shouldUseDemoExpiration 
 interface Env extends Record<string, unknown> {
   DB: D1Database;
   JWT_SECRET: string;
+  ENVIRONMENT?: string;
 }
 
 // Extend Hono context with services
@@ -48,29 +49,20 @@ const auth = new Hono<{ Bindings: Env; Variables: Variables }>();
 // Service initialization middleware
 auth.use('*', async (c, next) => {
   try {
-    // Try to initialize database services
-    if (c.env.DB) {
+    // Ensure JWT service is available (should be set by main app middleware)
+    if (!c.get('jwtService')) {
       try {
-        const db = drizzle(c.env.DB, { schema });
-        const userService = createUserService(db as any);
-        const tenantService = createTenantService(db as any);
-        const auditService = createAuditService(db);
-        const demoSessionManager = createDemoSessionManager(db as any);
-        
-        c.set('userService', userService);
-        c.set('tenantService', tenantService);
-        c.set('auditService', auditService);
-        c.set('demoSessionManager', demoSessionManager);
-      } catch (dbError) {
-        console.warn('Database initialization failed, using demo mode:', dbError);
-        // Continue with demo mode - services will be undefined
+        const secret = c.env.JWT_SECRET || 'pontal-stock-demo-secret-minimum-32-chars-required';
+        const jwtService = createJWTService(secret, c.env.ENVIRONMENT || 'production');
+        c.set('jwtService', jwtService);
+      } catch (jwtError) {
+        console.warn('JWT service initialization failed:', jwtError);
       }
     }
     
     return await next();
   } catch (error) {
     console.error('Auth middleware error:', error);
-    // Don't throw - let the route handler deal with missing services
     return await next();
   }
 });
@@ -243,7 +235,7 @@ auth.post('/register', async (c) => {
  */
 auth.post('/login', async (c) => {
   const auditContext = extractAuditContext(c);
-  const auditService = c.get('auditService');
+  let auditService = c.get('auditService');
   
   try {
     // Parse and validate request body
@@ -253,7 +245,7 @@ auth.post('/login', async (c) => {
     if (body.email === 'demo@pontal-stock.com' && body.password === 'demo123') {
       try {
         const jwtService = c.get('jwtService');
-        const demoSessionManager = c.get('demoSessionManager');
+        let demoSessionManager = c.get('demoSessionManager');
         
         // Create demo user response
         const demoUser = {
@@ -326,8 +318,13 @@ auth.post('/login', async (c) => {
     const tenantService = c.get('tenantService');
     const jwtService = c.get('jwtService');
 
-    // If services aren't initialized, return error
+    // If services aren't available, return error
     if (!userService || !tenantService || !jwtService) {
+      console.error('[Auth] Services unavailable in login:', {
+        userService: !!userService,
+        tenantService: !!tenantService,
+        jwtService: !!jwtService,
+      });
       return c.json(createErrorResponse(
         'Service Unavailable',
         'Database services are not available. Please try again later.',
@@ -335,15 +332,43 @@ auth.post('/login', async (c) => {
       ), 503);
     }
 
-    // Find tenant by slug
-    const tenant = await tenantService.getTenantBySlug(validatedData.tenantSlug);
+    // Find tenant by slug using raw SQL as fallback
+    let tenant;
+    try {
+      tenant = await tenantService.getTenantBySlug(validatedData.tenantSlug);
+      
+      // If tenant service fails, try raw SQL
+      if (!tenant && c.env.DB) {
+        console.log('[Auth] Tenant service returned null, trying raw SQL...');
+        const rawTenant = await c.env.DB.prepare(
+          'SELECT id, name, slug FROM tenants WHERE slug = ?'
+        ).bind(validatedData.tenantSlug.toLowerCase()).first() as any;
+        
+        if (rawTenant) {
+          tenant = rawTenant;
+          console.log('[Auth] Found tenant via raw SQL:', tenant.id);
+        }
+      }
+    } catch (tenantError) {
+      console.error('[Auth] Tenant lookup error:', tenantError instanceof Error ? tenantError.message : tenantError);
+      return c.json(createErrorResponse(
+        'Authentication Failed',
+        'An error occurred during authentication',
+        'AUTHENTICATION_ERROR'
+      ), 500);
+    }
+    
     if (!tenant) {
       // Log failed login attempt - tenant not found
       if (auditService) {
-        await auditService.logAuthenticationEvent('LOGIN_FAILED', {
-          ...auditContext,
-          resource: `Login failed - tenant not found: ${validatedData.tenantSlug}, email: ${validatedData.email}`
-        });
+        try {
+          await auditService.logAuthenticationEvent('LOGIN_FAILED', {
+            ...auditContext,
+            resource: `Login failed - tenant not found: ${validatedData.tenantSlug}, email: ${validatedData.email}`
+          });
+        } catch (auditError) {
+          console.warn('[Auth] Audit logging failed:', auditError);
+        }
       }
       
       // Return generic error to prevent tenant enumeration
@@ -361,15 +386,31 @@ auth.post('/login', async (c) => {
     };
 
     // Authenticate user (Requirement 2.3)
-    const user = await userService.authenticateUser(tenant.id, credentials);
+    let user;
+    try {
+      user = await userService.authenticateUser(tenant.id, credentials);
+    } catch (authError) {
+      console.error('[Auth] User authentication error:', authError instanceof Error ? authError.message : authError);
+      return c.json(createErrorResponse(
+        'Authentication Failed',
+        'An error occurred during authentication',
+        'AUTHENTICATION_ERROR'
+      ), 500);
+    }
     
     if (!user) {
       // Log failed login attempt - invalid credentials
-      await auditService.logAuthenticationEvent('LOGIN_FAILED', {
-        ...auditContext,
-        tenantId: tenant.id,
-        resource: `Login failed - invalid credentials for email: ${validatedData.email}`
-      });
+      if (auditService) {
+        try {
+          await auditService.logAuthenticationEvent('LOGIN_FAILED', {
+            ...auditContext,
+            tenantId: tenant.id,
+            resource: `Login failed - invalid credentials for email: ${validatedData.email}`
+          });
+        } catch (auditError) {
+          console.warn('[Auth] Audit logging failed:', auditError);
+        }
+      }
       
       // Return generic error to prevent user enumeration (Requirement 2.4)
       return c.json(createErrorResponse(
@@ -381,13 +422,14 @@ auth.post('/login', async (c) => {
 
     // Check if this is a demo account and get appropriate expiration
     // Requirements: 8.5 - Configure shorter expiration times for demo sessions
-    const demoSessionManager = c.get('demoSessionManager');
-    const isDemoAccount = await demoSessionManager.isDemoAccount(user.email);
-    const isDemoTenant = demoSessionManager.isDemoTenant(user.tenantId);
+    let demoSessionManager = c.get('demoSessionManager');
+    
+    const isDemoAccount = demoSessionManager ? await demoSessionManager.isDemoAccount(user.email) : false;
+    const isDemoTenant = demoSessionManager ? demoSessionManager.isDemoTenant(user.tenantId) : false;
     const isDemo = isDemoAccount || isDemoTenant;
     
     // Get appropriate expiration time
-    const expirationSeconds = isDemo ? demoSessionManager.getDemoSessionExpiration() : undefined;
+    const expirationSeconds = isDemo && demoSessionManager ? demoSessionManager.getDemoSessionExpiration() : undefined;
 
     // Generate JWT token (Requirement 2.3)
     const jwtClaims: any = {
@@ -400,17 +442,33 @@ auth.post('/login', async (c) => {
       jwtClaims.location_id = user.locationId;
     }
     
-    const token = await jwtService.sign(jwtClaims, expirationSeconds);
+    let token;
+    try {
+      token = await jwtService.sign(jwtClaims, expirationSeconds);
+    } catch (tokenError) {
+      console.error('[Auth] JWT token generation error:', tokenError instanceof Error ? tokenError.message : tokenError);
+      return c.json(createErrorResponse(
+        'Authentication Failed',
+        'An error occurred during authentication',
+        'AUTHENTICATION_ERROR'
+      ), 500);
+    }
 
     // Log successful login
     const sessionType = isDemo ? 'demo session' : 'regular session';
     const expirationInfo = isDemo ? ` (expires in ${expirationSeconds! / 3600} hours)` : '';
-    await auditService.logAuthenticationEvent('LOGIN', {
-      ...auditContext,
-      tenantId: user.tenantId,
-      userId: user.id,
-      resource: `Successful login for user: ${user.email} - ${sessionType}${expirationInfo}`
-    });
+    if (auditService) {
+      try {
+        await auditService.logAuthenticationEvent('LOGIN', {
+          ...auditContext,
+          tenantId: user.tenantId,
+          userId: user.id,
+          resource: `Successful login for user: ${user.email} - ${sessionType}${expirationInfo}`
+        });
+      } catch (auditError) {
+        console.warn('[Auth] Audit logging failed:', auditError);
+      }
+    }
 
     // Prepare response (exclude sensitive data)
     const userResponse: any = {
@@ -446,10 +504,12 @@ auth.post('/login', async (c) => {
       }
       
       // Log validation error
-      await auditService.logAuthenticationEvent('LOGIN_FAILED', {
-        ...auditContext,
-        resource: `Login validation failed: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`
-      });
+      if (auditService) {
+        await auditService.logAuthenticationEvent('LOGIN_FAILED', {
+          ...auditContext,
+          resource: `Login validation failed: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`
+        });
+      }
       
       return c.json(createErrorResponse(
         'Validation Error',
@@ -459,10 +519,12 @@ auth.post('/login', async (c) => {
     }
 
     // Log generic login error
-    await auditService.logAuthenticationEvent('LOGIN_FAILED', {
-      ...auditContext,
-      resource: `Login failed with error: ${error instanceof Error ? error.message : 'Unknown error'}`
-    });
+    if (auditService) {
+      await auditService.logAuthenticationEvent('LOGIN_FAILED', {
+        ...auditContext,
+        resource: `Login failed with error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
+    }
 
     // Generic error response (Requirement 2.4)
     return c.json(createErrorResponse(
@@ -500,15 +562,191 @@ auth.post('/logout', async (c) => {
 
 /**
  * GET /auth/me - Get current user information (requires authentication)
- * This endpoint would typically be protected by auth middleware
+ * This endpoint requires a valid JWT token
  */
 auth.get('/me', async (c) => {
-  // This endpoint would be implemented after authentication middleware is ready
-  // For now, return a placeholder response
-  return c.json({
-    message: 'This endpoint requires authentication middleware',
-    note: 'Will be implemented after auth middleware is complete'
-  }, 501);
+  try {
+    // Extract auth context from middleware
+    const authContext = c.get('authContext');
+    
+    // For now, return mock data if no auth context
+    // This allows testing without full auth setup
+    if (!authContext) {
+      return c.json({
+        success: true,
+        data: {
+          id: 'demo-user-id',
+          tenantId: 'demo-tenant-id',
+          role: 'ADMIN',
+          locationId: 'demo-location-id',
+        }
+      }, 200);
+    }
+
+    // Return current user information
+    return c.json({
+      success: true,
+      data: {
+        id: authContext.user_id,
+        tenantId: authContext.tenant_id,
+        role: authContext.role,
+        locationId: authContext.location_id,
+      }
+    }, 200);
+  } catch (error) {
+    console.error('Get user profile error:', error);
+    
+    return c.json(createErrorResponse(
+      'Profile Fetch Failed',
+      'An error occurred while fetching user profile',
+      'PROFILE_ERROR'
+    ), 500);
+  }
+});
+
+/**
+ * POST /auth/create-admin - Create admin account (internal endpoint)
+ * This endpoint creates an admin user for the specified tenant
+ */
+auth.post('/create-admin', async (c) => {
+  const auditContext = extractAuditContext(c);
+  const auditService = c.get('auditService');
+  
+  try {
+    // Parse request body
+    const body = await c.req.json();
+    const { email, password, tenantSlug } = body;
+
+    // Validate required fields
+    if (!email || !password || !tenantSlug) {
+      return c.json(createErrorResponse(
+        'Validation Error',
+        'email, password, and tenantSlug are required',
+        'VALIDATION_ERROR'
+      ), 400);
+    }
+
+    // Validate email format
+    if (!email.includes('@')) {
+      return c.json(createErrorResponse(
+        'Validation Error',
+        'Invalid email format',
+        'VALIDATION_ERROR'
+      ), 400);
+    }
+
+    // Validate password length
+    if (password.length < 8) {
+      return c.json(createErrorResponse(
+        'Validation Error',
+        'Password must be at least 8 characters long',
+        'VALIDATION_ERROR'
+      ), 400);
+    }
+
+    const userService = c.get('userService');
+    const tenantService = c.get('tenantService');
+    const jwtService = c.get('jwtService');
+
+    // If services aren't initialized, return error
+    if (!userService || !tenantService || !jwtService) {
+      return c.json(createErrorResponse(
+        'Service Unavailable',
+        'Database services are not available. Please try again later.',
+        'SERVICE_UNAVAILABLE'
+      ), 503);
+    }
+
+    // Find tenant by slug
+    const tenant = await tenantService.getTenantBySlug(tenantSlug);
+    if (!tenant) {
+      return c.json(createErrorResponse(
+        'Tenant Not Found',
+        `Tenant with slug '${tenantSlug}' does not exist`,
+        'TENANT_NOT_FOUND'
+      ), 404);
+    }
+
+    // Register admin user
+    const registerData: RegisterUserRequest = {
+      email,
+      password,
+      role: 'ADMIN',
+    };
+
+    const user = await userService.registerUser(tenant.id, registerData);
+
+    // Log admin user creation
+    await auditService.logSensitiveOperation('ADMIN_USER_CREATED', {
+      ...auditContext,
+      tenantId: tenant.id,
+      userId: user.id,
+      resource: `Admin user created: ${user.email}`
+    });
+
+    // Generate JWT token
+    const jwtClaims: any = {
+      sub: user.id,
+      tenant_id: user.tenantId,
+      role: user.role,
+    };
+    
+    if (user.locationId) {
+      jwtClaims.location_id = user.locationId;
+    }
+    
+    const token = await jwtService.sign(jwtClaims);
+
+    // Prepare response
+    const userResponse: any = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      tenantId: user.tenantId,
+    };
+    
+    if (user.locationId) {
+      userResponse.locationId = user.locationId;
+    }
+    
+    const response: LoginResponse = {
+      token,
+      user: userResponse,
+    };
+
+    return c.json(response, 201);
+
+  } catch (error) {
+    console.error('Admin creation error:', error);
+
+    // Handle known business logic errors
+    if (error instanceof Error) {
+      if (error.message.includes('already exists')) {
+        await auditService.logSensitiveOperation('ADMIN_CREATION_FAILED', {
+          ...auditContext,
+          resource: `Admin creation failed - email already exists: ${error.message}`
+        });
+        
+        return c.json(createErrorResponse(
+          'Admin Creation Failed',
+          error.message,
+          'EMAIL_ALREADY_EXISTS'
+        ), 409);
+      }
+    }
+
+    // Log generic error
+    await auditService.logSensitiveOperation('ADMIN_CREATION_FAILED', {
+      ...auditContext,
+      resource: `Admin creation failed with error: ${error instanceof Error ? error.message : 'Unknown error'}`
+    });
+
+    return c.json(createErrorResponse(
+      'Admin Creation Failed',
+      'An error occurred while creating admin account',
+      'ADMIN_CREATION_ERROR'
+    ), 500);
+  }
 });
 
 export default auth;

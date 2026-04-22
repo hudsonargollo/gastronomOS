@@ -4,9 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { GastronomyIcons } from '@/components/icons/gastronomy-icons';
 import { useTranslations } from '@/hooks/use-translations';
 import { Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -110,8 +108,11 @@ function LoginPageContent() {
           <Card className="shadow-2xl border-0 bg-white">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-semibold text-slate-900">
-                Acesso
+                Acesso ao Painel
               </CardTitle>
+              <CardDescription className="text-slate-500 text-xs mt-1">
+                Gerencie seu estoque e operações
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-3">

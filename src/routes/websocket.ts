@@ -6,8 +6,12 @@
 
 import { Hono } from 'hono';
 import { WebSocketService } from '../services/websocket-service';
+import { authenticate } from '../middleware/auth';
 
 const app = new Hono();
+
+// Apply authentication middleware to all WebSocket routes
+app.use('*', authenticate());
 
 // WebSocket upgrade endpoint
 app.get('/ws', async (c) => {
@@ -17,8 +21,10 @@ app.get('/ws', async (c) => {
     return c.json({ error: 'Expected WebSocket upgrade' }, 426);
   }
 
-  const tenantId = c.req.query('tenantId');
-  const userId = c.req.query('userId');
+  // Get tenant and user from authenticated context
+  const authContext = c.get('authContext');
+  const tenantId = authContext?.tenant_id || c.req.query('tenantId');
+  const userId = authContext?.user_id || c.req.query('userId');
   const interfaceType = c.req.query('interface');
 
   if (!tenantId || !interfaceType) {
@@ -43,7 +49,13 @@ app.get('/ws', async (c) => {
 // Get connection information
 app.get('/ws/connections', async (c) => {
   try {
-    const tenantId = c.get('tenantId') as string;
+    const authContext = c.get('authContext');
+    const tenantId = authContext?.tenant_id;
+    
+    if (!tenantId) {
+      return c.json({ error: 'Tenant context required' }, 400);
+    }
+    
     const wsNamespace = c.env.WEBSOCKET_DO as DurableObjectNamespace;
 
     if (!wsNamespace) {
@@ -63,7 +75,13 @@ app.get('/ws/connections', async (c) => {
 // Test broadcast endpoint (for development/testing)
 app.post('/ws/test-broadcast', async (c) => {
   try {
-    const tenantId = c.get('tenantId') as string;
+    const authContext = c.get('authContext');
+    const tenantId = authContext?.tenant_id;
+    
+    if (!tenantId) {
+      return c.json({ error: 'Tenant context required' }, 400);
+    }
+    
     const body = await c.req.json();
     const wsNamespace = c.env.WEBSOCKET_DO as DurableObjectNamespace;
 

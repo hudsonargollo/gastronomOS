@@ -73,6 +73,16 @@ export class ApiClient {
       headers,
     });
 
+    // Handle 401 Unauthorized - redirect to login
+    if (response.status === 401) {
+      this.clearToken();
+      if (typeof window !== 'undefined') {
+        // Redirect to login page
+        window.location.href = '/login';
+      }
+      throw new Error('Unauthorized - redirecting to login');
+    }
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Network error' }));
       throw new Error(error.message || `HTTP ${response.status}`);
@@ -112,7 +122,13 @@ export class ApiClient {
   }
 
   async getProfile() {
-    return this.request<{ user: any }>('/auth/profile');
+    return this.request<{ id: string; tenantId: string; role: string; locationId?: string; email: string }>('/auth/me');
+  }
+
+  async logout() {
+    return this.request<{ message: string }>('/auth/logout', {
+      method: 'POST',
+    });
   }
 
   // Health check

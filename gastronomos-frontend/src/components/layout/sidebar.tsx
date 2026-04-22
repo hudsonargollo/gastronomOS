@@ -175,11 +175,19 @@ export function Sidebar({ collapsed = false, className }: SidebarProps) {
           }}
         >
           <motion.div 
-            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-red-600 shadow-lg shrink-0"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl shadow-lg shrink-0 overflow-hidden bg-gradient-to-br from-orange-400 to-red-500"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <GastronomyIcons.Chef className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            <img 
+              src="/logos/pontal-carapitangui.webp" 
+              alt="Pontal Stock Logo"
+              className="h-full w-full object-contain"
+              onError={(e) => {
+                // Hide image on error and show gradient background
+                e.currentTarget.style.display = 'none';
+              }}
+            />
           </motion.div>
           <AnimatePresence>
             {!collapsed && (
