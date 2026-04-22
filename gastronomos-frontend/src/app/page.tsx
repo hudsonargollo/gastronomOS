@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  // Force rebuild - v2
+  // Force rebuild - v3
   return <LoginPageContent />;
 }
 
